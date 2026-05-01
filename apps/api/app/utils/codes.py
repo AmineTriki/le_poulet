@@ -1,6 +1,6 @@
 import random
 import string
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from app.config import settings
 
@@ -13,7 +13,7 @@ async def generate_game_code(session: AsyncSession) -> str:
 
     for _ in range(20):
         code = "".join(random.choices(ALPHABET, k=settings.game_code_length))
-        existing = await session.exec(select(Game).where(Game.code == code))
-        if not existing.first():
+        result = await session.execute(select(Game).where(Game.code == code))
+        if not result.scalars().first():
             return code
     raise RuntimeError("Could not generate unique game code after 20 attempts")

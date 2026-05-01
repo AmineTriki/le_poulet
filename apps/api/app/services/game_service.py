@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from app.models.game import Game, GameStatus
@@ -23,16 +24,15 @@ async def create_game(session: AsyncSession, data: GameCreate, host_name: str) -
         role=PlayerRole.HOST,
     )
     session.add(host)
+    await session.flush()
     game.host_player_id = host.id
+    session.add(game)
     await session.commit()
     await session.refresh(game)
     return game, host
 
 
-async def start_game(
-    session: AsyncSession,
-    game: Game,
-) -> Game:
+async def start_game(session: AsyncSession, game: Game) -> Game:
     now = datetime.utcnow()
     game.status = GameStatus.HEAD_START
     game.head_start_ends_at = now + timedelta(minutes=game.head_start_minutes)
@@ -40,26 +40,38 @@ async def start_game(
         minutes=game.head_start_minutes,
         hours=game.game_duration_hours,
     )
+    session.add(game)
+    await session.flush()
 
-    players = (await session.exec(select(Player).where(Player.game_id == game.id))).all()
-    chickens = await pick_chickens(list(players), game.num_chickens)
-    for c in chickens:
-        c.role = PlayerRole.CHICKEN
-        session.add(c)
+    players_result = await session.exec(select(Player).where(Player.game_id == game.id))
+    players = list(players_result.all())
 
-    hunters = [p for p in players if p not in chickens]
-    teams = await build_teams(hunters, game.team_size, game.language)
-    for team in teams:
-        team.game_id = game.id
-        session.add(team)
-        await session.flush()
-        for p in team.players:
-            p.team_id = team.id
+    chickens = await pick_chickens(players, game.num_chickens)
+    chicken_ids = {p.id for p in chickens}
+    for p in players:
+        if p.id in chicken_ids:
+            p.role = PlayerRole.CHICKEN
             session.add(p)
+
+    hunters = [p for p in players if p.id not in chicken_ids]
+    drafts = await build_teams(hunters, game.team_size, game.language)
+
+    for draft in drafts:
+        draft.team.game_id = game.id
+        session.add(draft.team)
+        await session.flush()
+        for player in draft.players:
+            player.team_id = draft.team.id
+            session.add(player)
 
     await session.commit()
     await session.refresh(game)
     return game
+
+
+async def get_game_by_code(session: AsyncSession, code: str) -> Optional[Game]:
+    result = await session.exec(select(Game).where(Game.code == code.upper()))
+    return result.first()
 
 
 async def end_game(session: AsyncSession, game: Game) -> Game:

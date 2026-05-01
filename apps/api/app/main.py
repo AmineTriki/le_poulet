@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 from fastapi import FastAPI
@@ -8,6 +9,7 @@ from app.database import init_db
 from app.redis import close_redis
 from app.routers import games, players, teams, chickens, challenges, locations, bars, weapons, costumes
 from app.websockets.handler import router as ws_router
+from app.services.scheduler import run_scheduler
 
 
 @asynccontextmanager
@@ -15,7 +17,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.sentry_dsn:
         sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=0.1)
     await init_db()
+    scheduler_task = asyncio.create_task(run_scheduler())
     yield
+    scheduler_task.cancel()
+    try:
+        await scheduler_task
+    except asyncio.CancelledError:
+        pass
     await close_redis()
 
 
