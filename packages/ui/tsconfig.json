@@ -1,0 +1,9 @@
+{
+  "extends": "@le-poulet/config/typescript/base.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

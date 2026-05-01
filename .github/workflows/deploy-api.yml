@@ -1,0 +1,33 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+
+jobs:
+  deploy:
+    name: Test then deploy to Railway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: uv sync --dev
+
+      - name: Run tests before deploy
+        working-directory: apps/api
+        run: uv run pytest
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./test.db"
+          SECRET_KEY: "test-key-not-for-production"
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@v1.0.0
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: api

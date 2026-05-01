@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --poulet-black: #0A0805;
+  --poulet-gold: #F5C518;
+  --poulet-cream: #F0EAD6;
+  --poulet-red: #C1121F;
+  --poulet-green: #2DC653;
+  --poulet-feather: #8B7355;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--poulet-black);
+  color: var(--poulet-cream);
+  font-family: 'Instrument Serif', serif;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+@layer base {
+  .font-heading { font-family: 'Bebas Neue', sans-serif; }
+  .font-body { font-family: 'Instrument Serif', serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+}
+
+@layer utilities {
+  .text-shadow-gold { text-shadow: 0 0 20px rgba(245, 197, 24, 0.6); }
+  .shadow-gold { box-shadow: 0 0 20px rgba(245, 197, 24, 0.4); }
+  .shadow-gold-lg { box-shadow: 0 0 40px rgba(245, 197, 24, 0.6); }
+  .glow-red { box-shadow: 0 0 20px rgba(193, 18, 31, 0.5); }
+}
+
+/* Floating feathers animation */
+@keyframes float-feather {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-20px) rotate(720deg); opacity: 0; }
+}
+
+.feather {
+  position: fixed;
+  width: 8px;
+  height: 20px;
+  background: var(--poulet-gold);
+  clip-path: ellipse(50% 100% at 50% 100%);
+  animation: float-feather linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Heartbeat pulse for GPS circle */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); opacity: 0.15; }
+  50% { transform: scale(1.03); opacity: 0.25; }
+}
+
+/* BWAK text explosion */
+@keyframes bwak-explode {
+  0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(3deg); opacity: 1; }
+  80% { transform: scale(0.95) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.bwak-text {
+  animation: bwak-explode 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Marquee animations */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 30s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+/* Leaflet map overrides */
+.leaflet-container {
+  background: var(--poulet-black) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.leaflet-tile-pane { filter: saturate(0.7) brightness(0.8); }

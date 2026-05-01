@@ -1,0 +1,67 @@
+{
+  "montreal": {
+    "name_en": "Montreal",
+    "name_fr": "Montréal",
+    "country": "CA",
+    "default_language": "fr",
+    "center": { "lat": 45.5017, "lng": -73.5673 },
+    "bbox": [45.41, -73.97, 45.70, -73.47],
+    "default_radius_m": 1500,
+    "timezone": "America/Toronto",
+    "currency": "CAD",
+    "starting_neighborhoods": ["Plateau-Mont-Royal", "Mile-End", "Vieux-Montréal", "Centre-Ville"],
+    "city_challenges": ["ch_mtl_001", "ch_mtl_002", "ch_mtl_003", "ch_mtl_004", "ch_mtl_005"]
+  },
+  "paris": {
+    "name_en": "Paris",
+    "name_fr": "Paris",
+    "country": "FR",
+    "default_language": "fr",
+    "center": { "lat": 48.8566, "lng": 2.3522 },
+    "bbox": [48.81, 2.22, 48.90, 2.47],
+    "default_radius_m": 1500,
+    "timezone": "Europe/Paris",
+    "currency": "EUR",
+    "starting_neighborhoods": ["Marais", "Montmartre", "Saint-Germain", "Bastille"],
+    "city_challenges": ["ch_par_001", "ch_par_002", "ch_par_003", "ch_par_004", "ch_par_005"]
+  },
+  "tunis": {
+    "name_en": "Tunis",
+    "name_fr": "Tunis",
+    "country": "TN",
+    "default_language": "fr",
+    "center": { "lat": 36.8065, "lng": 10.1815 },
+    "bbox": [36.75, 10.10, 36.87, 10.28],
+    "default_radius_m": 1500,
+    "timezone": "Africa/Tunis",
+    "currency": "TND",
+    "starting_neighborhoods": ["Medina", "La Marsa", "Sidi Bou Said", "Carthage"],
+    "city_challenges": ["ch_tun_001", "ch_tun_002", "ch_tun_003", "ch_tun_004", "ch_tun_005"]
+  },
+  "nyc": {
+    "name_en": "New York City",
+    "name_fr": "New York",
+    "country": "US",
+    "default_language": "en",
+    "center": { "lat": 40.7128, "lng": -74.0060 },
+    "bbox": [40.49, -74.26, 40.92, -73.70],
+    "default_radius_m": 2000,
+    "timezone": "America/New_York",
+    "currency": "USD",
+    "starting_neighborhoods": ["Lower East Side", "Brooklyn", "Hell's Kitchen", "East Village"],
+    "city_challenges": ["ch_nyc_001", "ch_nyc_002", "ch_nyc_003", "ch_nyc_004", "ch_nyc_005"]
+  },
+  "london": {
+    "name_en": "London",
+    "name_fr": "Londres",
+    "country": "GB",
+    "default_language": "en",
+    "center": { "lat": 51.5074, "lng": -0.1278 },
+    "bbox": [51.28, -0.51, 51.69, 0.33],
+    "default_radius_m": 2000,
+    "timezone": "Europe/London",
+    "currency": "GBP",
+    "starting_neighborhoods": ["Shoreditch", "Soho", "Camden", "Brixton"],
+    "city_challenges": ["ch_lon_001", "ch_lon_002", "ch_lon_003", "ch_lon_004", "ch_lon_005"]
+  }
+}

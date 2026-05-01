@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Le Poulet",
+    "slug": "le-poulet",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "lepoulet",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0805"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "gg.lepoulet.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Le Poulet needs your location to show your team on the map and help you hunt the chicken.",
+        "NSLocationWhenInUseUsageDescription": "Le Poulet needs your location to show your team on the map.",
+        "NSCameraUsageDescription": "Le Poulet needs camera access to complete photo and video challenges.",
+        "NSMicrophoneUsageDescription": "Le Poulet needs microphone access to record video challenges.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Le Poulet tracks your location for the hunt.",
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Le Poulet needs camera access for challenges."
+        }
+      ],
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

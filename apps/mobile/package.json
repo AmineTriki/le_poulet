@@ -1,0 +1,36 @@
+{
+  "name": "@le-poulet/mobile",
+  "version": "0.1.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo start --ios",
+    "build:ios": "eas build --platform ios",
+    "submit:ios": "eas submit --platform ios",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint app components hooks --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "expo-router": "~3.5.0",
+    "expo-location": "~17.0.0",
+    "expo-camera": "~15.0.0",
+    "expo-notifications": "~0.28.0",
+    "expo-haptics": "~13.0.0",
+    "expo-task-manager": "~11.8.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-maps": "1.14.0",
+    "react-native-reanimated": "~3.10.0",
+    "react-native-gesture-handler": "~2.16.0",
+    "@react-native-async-storage/async-storage": "1.23.1",
+    "@le-poulet/shared": "workspace:*",
+    "@sentry/react-native": "~5.22.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "typescript": "^5.4.0",
+    "@types/react": "~18.2.0",
+    "@le-poulet/config": "workspace:*"
+  }
+}

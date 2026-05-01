@@ -1,0 +1,330 @@
+# Le Poulet — Cursor Project Rules
+
+## Project Overview
+
+Le Poulet is a free, city-wide chicken hunt game. One person (the Chicken) hides somewhere
+in the city — ideally a bar. Teams of hunters use GPS tracking, photo/video challenges, and
+chaos power-up weapons to find them. First team to physically locate and photograph the
+Chicken wins. Think manhunt meets bar crawl meets chaos engineering.
+
+**Status:** MVP (Montreal-first, bilingual FR/EN)
+**Domain:** lepoulet.gg
+**Tagline:** Find the chicken. Win the city.
+
+---
+
+## Monorepo Structure
+
+```
+le_poulet/
+├── apps/
+│   ├── api/          # Python FastAPI backend (YOU ARE HERE)
+│   ├── web/          # Next.js 14 marketing + host dashboard
+│   └── mobile/       # Expo React Native app (iOS + Android)
+├── packages/
+│   ├── ui/           # Shared React component library
+│   ├── types/        # Shared TypeScript types
+│   └── config/       # Shared ESLint, Tailwind, TypeScript configs
+├── turbo.json
+├── pnpm-workspace.yaml
+├── docker-compose.yml
+└── Makefile
+```
+
+---
+
+## Tech Stack
+
+### Backend (apps/api/)
+- **Runtime:** Python 3.12
+- **Framework:** FastAPI with async/await throughout
+- **ORM:** SQLModel (SQLAlchemy + Pydantic unified)
+- **Database:** PostgreSQL 16 via asyncpg
+- **Cache/Pub-Sub:** Redis 7 via aioredis
+- **Migrations:** Alembic (async)
+- **Package manager:** uv
+- **Linting:** ruff (line-length 88, E/F/I/UP rules)
+- **Type checking:** mypy (strict mode)
+- **Testing:** pytest-asyncio
+- **Auth:** JWT (python-jose) + player tokens (UUID)
+- **Push notifications:** Expo Push API
+- **Error tracking:** Sentry
+- **Maps:** OpenStreetMap (Overpass API for bars, Nominatim for geocoding)
+- **Deployment:** Railway
+
+### Web (apps/web/)
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Maps:** Mapbox GL JS
+- **State:** Zustand
+- **Deployment:** Vercel
+
+### Mobile (apps/mobile/)
+- **Framework:** Expo SDK 51 + React Native
+- **Navigation:** Expo Router (file-based)
+- **Maps:** react-native-maps
+- **Camera:** expo-camera
+- **Location:** expo-location (foreground + background)
+- **WebSocket:** native WebSocket API
+- **Deployment:** EAS Build + App Store / Google Play
+
+---
+
+## Game Rules
+
+### Setup
+1. One player creates a game → gets a 6-character code
+2. Host configures: number of chickens (1-4), head start (10-60 min), duration (1-4h),
+   team size (2-10), buy-in (0 = free), costume policy, chaos mode toggle
+3. Players join via code — no account required, just a name and emoji
+4. Host starts the game → chickens are randomly assigned
+
+### Head Start Phase
+- Chickens get N minutes to hide anywhere in the city
+- Bar selection UI: search nearby bars via OpenStreetMap
+- Chicken's location is hidden from hunters during head start
+- GPS zone (circle) starts at 1km radius centered on city center
+
+### Active Hunt Phase
+- Hunters see each other's live locations on map
+- Chicken location is HIDDEN — only zone shrinking reveals proximity
+- Zone shrinks every N minutes, closing in on the bar
+- Hunters complete photo/video challenges to earn points
+- Chicken scores challenges too (rates hunter submissions)
+- Chaos weapons can be purchased with chaos points
+
+### Winning
+- First team to find and photograph the Chicken wins the hunt
+- Points from challenges determine final team ranking
+- Chicken earns points for every minute they stay hidden
+- Costume bonus: wearing a chicken suit = 2x points for the Chicken
+
+### Challenge System
+- Teams draw random challenges from the pool
+- Submit photo or video as proof
+- Chicken scores it 0-100 (or auto-approved after timeout)
+- Points = challenge base points × (chicken_score / 100)
+- Categories: social, physical, bar, creative, embarrassing, city
+
+---
+
+## Chaos Mode Weapons
+
+Weapons cost chaos points (earned by completing challenges faster than average):
+
+| Weapon | Cost | Effect | Cooldown |
+|--------|------|--------|----------|
+| Air Strike | 80 | Reveals target team location for 30s | 20 min |
+| Spy | 60 | See target team's current challenge | 15 min |
+| Booby Trap | 50 | Next challenge draw gives hardest available | Once |
+| Steal | 40 | Steal 20% of target team's points | 10 min |
+| Decoy | 100 | Place fake Chicken ping on map | Once |
+| Silence | 70 | Target team can't communicate for 5 min | 20 min |
+
+---
+
+## Visual Design
+
+### Colors (Tailwind custom)
+```
+poulet-yellow:   #F5C518   (primary brand, CTAs)
+poulet-red:      #E63946   (danger, Chicken role badge)
+poulet-dark:     #1A1A2E   (backgrounds)
+poulet-darker:   #16213E   (card backgrounds)
+poulet-surface:  #0F3460   (elevated surfaces)
+poulet-green:    #2DC653   (success, found states)
+poulet-purple:   #8338EC   (chaos mode accent)
+```
+
+### Typography
+- **Display:** Space Grotesk (bold, all caps for game codes)
+- **Body:** Inter
+- **Monospace:** JetBrains Mono (codes, coords)
+
+### UI Principles
+- Dark-first (game is played at night in bars)
+- High contrast for outdoor/dim lighting readability
+- Large tap targets (minimum 44px)
+- Emoji-heavy — players have emoji avatars
+- Animations: spring-based, never jarring
+- Map is always the hero on game screens
+
+---
+
+## API Architecture
+
+### Authentication
+- No traditional accounts — players are ephemeral
+- Each player gets a UUID token on join (stored in AsyncStorage on mobile)
+- Host token is a separate UUID for game management
+- JWT used only for admin/host web dashboard
+
+### WebSocket Events (apps/api/app/websockets/events.py)
+
+**Server → Client:**
+- `game:started` — hunt is now live
+- `game:ended` — game over with scoreboard
+- `player:joined` — new player in lobby
+- `player:left` — player disconnected
+- `location:update` — player position update (hunters only)
+- `circle:shrink` — GPS zone shrinks
+- `chicken:alert` — hunters approaching (sent to chicken only)
+- `chicken:found` — a team found the chicken
+- `challenge:new` — new challenge assigned to team
+- `challenge:submitted` — submission ready for scoring
+- `challenge:scored` — submission scored with points
+- `weapon:fired` — chaos weapon launched
+- `weapon:hit` — weapon effect applied to target
+- `bar:marked` — bar eliminated/confirmed by a team
+
+### Rate Limiting
+- Location updates: max 1 per 4 seconds per player (configurable)
+- Bar searches: cached in Redis for 1 hour
+- Challenge draws: no limit during active game
+
+### Circle Engine
+- Initial radius: 1000m
+- Shrink factor: 60% of current radius per step
+- Minimum radius: 75m (basically pointing at the bar)
+- Jitter: ±15% of new radius to avoid pinpointing exactly
+- Center drifts toward bar with each shrink (alpha = 1 - r/initial_r)
+
+---
+
+## Python Coding Rules
+
+1. **Always use async/await** — no sync database or HTTP calls
+2. **Type everything** — mypy strict mode, no `Any` unless necessary
+3. **Pydantic for I/O** — all request/response bodies via Pydantic models
+4. **SQLModel for DB** — never raw SQL unless Alembic migrations
+5. **Dependency injection** — use FastAPI `Depends()` for session, redis, auth
+6. **Routers are thin** — business logic lives in services/
+7. **Services are pure** — no direct HTTP request/response objects
+8. **Errors** — raise HTTPException in routers, let services return None/raise ValueError
+9. **Line length:** 88 (ruff enforced)
+10. **Imports:** isort via ruff (I rules)
+11. **String formatting:** f-strings always, never .format() or %
+12. **UUID primary keys** — all models use str UUID PKs
+13. **UTC everywhere** — datetime.utcnow(), convert to local only in client
+
+## TypeScript/React Coding Rules
+
+1. **Strict TypeScript** — no `any`, no `@ts-ignore` without comment
+2. **React Server Components** by default in Next.js — use `"use client"` only when needed
+3. **Zustand** for client state — one store per feature domain
+4. **API calls** via typed fetch wrapper — never raw fetch in components
+5. **Error boundaries** — every route segment needs one
+6. **Accessibility** — all interactive elements need aria labels
+7. **Mobile-first** Tailwind — design for 375px then scale up
+8. **No class components** — functional only
+9. **Named exports** — default exports only for page/layout files
+10. **Colocate tests** — `*.test.ts` next to the file
+
+---
+
+## Key Architectural Decisions
+
+### Why no user accounts?
+The game is meant to be spontaneous — friends at a bar, zero friction to start. Persistent
+accounts would add a login wall. Player tokens stored in device storage are sufficient.
+
+### Why OpenStreetMap over Google Maps?
+Free, no API key required for basic usage, good coverage in Montreal. Overpass API gives
+us bar/pub/nightclub data directly. Switch to Mapbox for the map tiles (better visuals).
+
+### Why SQLModel over pure SQLAlchemy?
+Unified Pydantic + SQLAlchemy model definition reduces boilerplate. The tradeoff (less
+flexibility for complex queries) is acceptable for our use case.
+
+### Why Redis pub/sub not used for WebSocket?
+Single-server MVP — using in-memory ConnectionManager. Add Redis pub/sub (or Centrifugo)
+when scaling to multiple API instances.
+
+### Why Expo over bare React Native?
+Speed of development, OTA updates via EAS Update, no Xcode required for most dev work.
+Background location tracking works fine via expo-location with proper permissions.
+
+### Why not charge for the game?
+Viral growth via costume affiliate links (Amazon Associates) and eventual sponsorships from
+bars who want to be the official "Poulet Hideout." Free = more players = more bar revenue.
+
+---
+
+## Environment Variables
+
+See apps/api/.env.example for the full list. Key ones:
+
+- `DATABASE_URL` — async PostgreSQL connection string
+- `REDIS_URL` — Redis connection string
+- `SECRET_KEY` — JWT signing secret (256-bit minimum)
+- `ANTHROPIC_API_KEY` — for AI-generated challenge ideas (optional)
+- `EXPO_ACCESS_TOKEN` — for push notifications
+- `AMAZON_AFFILIATE_TAG` — for costume affiliate links
+
+---
+
+## Common Tasks
+
+### Add a new city
+```bash
+make add-city
+# OR
+cd apps/api && uv run python -m scripts.add_city
+```
+Then add the city config to apps/api/data/cities.json.
+
+### Add challenges
+Edit apps/api/data/challenges_en.json and challenges_fr.json, then:
+```bash
+make seed
+```
+
+### Run the full stack locally
+```bash
+make dev
+# API: http://localhost:8000
+# Web: http://localhost:3000
+# Docs: http://localhost:8000/docs
+```
+
+### Database migrations
+```bash
+make migrate-new MSG="add costume table"
+make migrate
+```
+
+---
+
+## File Naming Conventions
+
+- Python: `snake_case.py`
+- TypeScript: `camelCase.ts` for utilities, `PascalCase.tsx` for components
+- Data files: `snake_case.json`
+- Env vars: `SCREAMING_SNAKE_CASE`
+- Database tables: `snake_case` (plural)
+- API routes: `kebab-case` in URLs, snake_case in query params
+
+---
+
+## Montreal-Specific Notes
+
+- Default language: French
+- Neighborhoods for starting zones: Plateau, Mile-End, Vieux-Port, Centre-Ville
+- SAQ (liquor stores) are popular landmarks — avoid using as bar targets
+- Metro stations are good coordinate anchors
+- Game typically plays best between 9pm-2am Friday/Saturday
+
+---
+
+## Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| API | Railway | api.lepoulet.gg |
+| Web | Vercel | lepoulet.gg |
+| iOS | App Store | via EAS Submit |
+| Android | Google Play | via EAS Submit |
+| DB | Railway (Postgres) | internal |
+| Cache | Railway (Redis) | internal |
+
+CI/CD: GitHub Actions (lint + test on PR, deploy on merge to main)
