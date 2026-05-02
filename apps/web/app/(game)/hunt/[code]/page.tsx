@@ -1,14 +1,14 @@
-export const dynamic = 'force-dynamic';
 "use client";
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { loadSession } from "@hooks/useGameSession";
 import { useGameSocket } from "@hooks/useGameSocket";
 import type { WsMessage } from "@hooks/useGameSocket";
 import type { PlayerMarker, CircleState } from "@components/LeafletMap";
 
-const LeafletMap = dynamic(() => import("@components/LeafletMap"), {
+const LeafletMap = nextDynamic(() => import("@components/LeafletMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full bg-poulet-black flex items-center justify-center">

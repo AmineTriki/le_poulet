@@ -1,13 +1,13 @@
-export const dynamic = 'force-dynamic';
 "use client";
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { loadSession } from "@hooks/useGameSession";
 import { useGameSocket } from "@hooks/useGameSocket";
 import type { WsMessage } from "@hooks/useGameSocket";
 
-const RouletteWheel = dynamic(
+const RouletteWheel = nextDynamic(
   () => import("@components/RouletteWheel").then((m) => ({ default: m.RouletteWheel })),
   { ssr: false },
 );

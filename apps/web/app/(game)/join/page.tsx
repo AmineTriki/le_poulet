@@ -1,10 +1,10 @@
-export const dynamic = 'force-dynamic';
 "use client";
-import React, { useState } from "react";
+export const dynamic = 'force-dynamic';
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSession } from "@hooks/useGameSession";
 
-export default function JoinPage() {
+function JoinForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [code, setCode] = useState(params.get("code")?.toUpperCase() ?? "");
@@ -76,5 +76,13 @@ export default function JoinPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function JoinPage() {
+  return (
+    <Suspense>
+      <JoinForm />
+    </Suspense>
   );
 }

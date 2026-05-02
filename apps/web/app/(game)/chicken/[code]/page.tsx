@@ -1,13 +1,13 @@
-export const dynamic = 'force-dynamic';
 "use client";
+export const dynamic = 'force-dynamic';
 import React, { useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { loadSession } from "@hooks/useGameSession";
 import { useGameSocket } from "@hooks/useGameSocket";
 import type { WsMessage } from "@hooks/useGameSocket";
 
-const LeafletMap = dynamic(() => import("@components/LeafletMap"), { ssr: false });
+const LeafletMap = nextDynamic(() => import("@components/LeafletMap"), { ssr: false });
 
 export default function ChickenPage() {
   const { code } = useParams<{ code: string }>();
