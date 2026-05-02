@@ -3,7 +3,7 @@ FROM python:3.12-slim AS builder
 WORKDIR /app
 RUN pip install uv
 COPY pyproject.toml uv.lock ./
-RUN uv pip install --system --no-cache -r pyproject.toml
+RUN uv sync --no-dev --system
 
 FROM python:3.12-slim AS runtime
 
