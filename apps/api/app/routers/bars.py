@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
 from app.redis import get_redis
@@ -11,6 +12,6 @@ async def search_bars_endpoint(
     lat: float,
     lng: float,
     radius_m: int = 1500,
-    redis: Redis = Depends(get_redis),
+    redis: Optional[Redis] = Depends(get_redis),
 ) -> list[dict]:
     return await search_bars(lat, lng, radius_m, redis)

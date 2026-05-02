@@ -1,6 +1,6 @@
 import json
 import httpx
-from typing import Any
+from typing import Any, Optional
 from redis.asyncio import Redis
 from app.config import settings
 
@@ -20,12 +20,14 @@ async def search_bars(
     lat: float,
     lng: float,
     radius_m: int,
-    redis: Redis,
+    redis: Optional[Redis],
 ) -> list[dict[str, Any]]:
     cache_key = f"bars:{lat:.3f}:{lng:.3f}:{radius_m}"
-    cached = await redis.get(cache_key)
-    if cached:
-        return json.loads(cached)  # type: ignore[no-any-return]
+
+    if redis is not None:
+        cached = await redis.get(cache_key)
+        if cached:
+            return json.loads(cached)  # type: ignore[no-any-return]
 
     delta = radius_m / 111_000
     bbox = f"{lat - delta},{lng - delta},{lat + delta},{lng + delta}"
@@ -55,5 +57,8 @@ async def search_bars(
         })
 
     bars = bars[:20]
-    await redis.setex(cache_key, 3600, json.dumps(bars))
+
+    if redis is not None:
+        await redis.setex(cache_key, 3600, json.dumps(bars))
+
     return bars
