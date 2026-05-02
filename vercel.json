@@ -1,5 +1,5 @@
 {
-  "installCommand": "pnpm install --filter @le-poulet/web...",
+  "installCommand": "pnpm install --filter @le-poulet/web... --no-frozen-lockfile",
   "buildCommand": "pnpm --filter @le-poulet/web build",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs"
