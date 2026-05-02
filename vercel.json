@@ -2,5 +2,11 @@
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @le-poulet/web build",
   "outputDirectory": "apps/web/.next",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "experimentalServices": {
+    "api": {
+      "entrypoint": "apps/api",
+      "routePrefix": "/"
+    }
+  }
 }
