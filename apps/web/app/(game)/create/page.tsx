@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { saveSession } from "@hooks/useGameSession";
 
 type CostumePolicy = "required" | "encouraged" | "optional" | "none";
 
@@ -102,7 +103,15 @@ export default function CreatePage() {
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
-      const data = (await res.json()) as { game_code: string };
+      const data = (await res.json()) as { game_code: string; game_id: string; host_token: string; host_player_id: string };
+      saveSession({
+        gameCode: data.game_code,
+        gameId: data.game_id,
+        playerId: data.host_player_id,
+        playerToken: data.host_token,
+        isHost: true,
+        hostToken: data.host_token,
+      });
       router.push(`/lobby/${data.game_code}`);
     } catch (err) {
       setError("Failed to create game. Is the server running?");

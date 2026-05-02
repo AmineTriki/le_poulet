@@ -20,7 +20,7 @@ async def create_new_game(
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     game, host = await create_game(session, data, host_name)
-    return {"game_code": game.code, "game_id": game.id, "host_token": host.token}
+    return {"game_code": game.code, "game_id": game.id, "host_token": host.token, "host_player_id": host.id}
 
 
 @router.get("/{code}", response_model=dict)

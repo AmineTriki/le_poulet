@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { saveSession } from "@hooks/useGameSession";
 
 export default function JoinPage() {
   const router = useRouter();
@@ -19,10 +20,19 @@ export default function JoinPage() {
       const gameRes = await fetch(`${API}/api/v1/games/${code}`);
       if (!gameRes.ok) { setError("Game not found. Check your code."); setLoading(false); return; }
       const game = await gameRes.json() as { id: string };
-      await fetch(`${API}/api/v1/players/`, {
+      const joinRes = await fetch(`${API}/api/v1/players/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ game_id: game.id, name: name.trim() }),
+      });
+      if (!joinRes.ok) { setError("Could not join game."); setLoading(false); return; }
+      const joinData = await joinRes.json() as { player_id: string; token: string; emoji: string };
+      saveSession({
+        gameCode: code,
+        gameId: game.id,
+        playerId: joinData.player_id,
+        playerToken: joinData.token,
+        isHost: false,
       });
       router.push(`/lobby/${code}`);
     } catch {

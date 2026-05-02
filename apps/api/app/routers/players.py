@@ -5,6 +5,7 @@ from app.database import get_session
 from app.models.game import Game
 from app.models.player import Player
 from app.schemas.player import PlayerCreate
+from app.websockets.manager import manager
 import random
 
 router = APIRouter()
@@ -26,6 +27,12 @@ async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_sess
     session.add(player)
     await session.commit()
     await session.refresh(player)
+    await manager.broadcast(player.game_id, {
+        "type": "player:joined",
+        "player_id": player.id,
+        "name": player.name,
+        "emoji": player.emoji,
+    })
     return {"player_id": player.id, "token": player.token, "emoji": player.emoji}
 
 
