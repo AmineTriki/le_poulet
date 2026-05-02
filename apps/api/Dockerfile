@@ -2,11 +2,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN pip install uv
-
-COPY pyproject.toml uv.lock ./
-RUN uv export --no-dev --no-emit-project -o /tmp/requirements.txt && \
-    uv pip install --system --no-cache -r /tmp/requirements.txt
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
