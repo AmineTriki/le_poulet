@@ -8,6 +8,7 @@ from app.config import settings
 from app.database import init_db
 from app.redis import close_redis
 from app.routers import games, players, teams, chickens, challenges, locations, bars, weapons, costumes
+from app.routers.auth import router as auth_router
 from app.websockets.handler import router as ws_router
 from app.services.scheduler import run_scheduler
 
@@ -42,6 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(games.router, prefix="/api/v1/games", tags=["games"])
 app.include_router(players.router, prefix="/api/v1/players", tags=["players"])
 app.include_router(teams.router, prefix="/api/v1/teams", tags=["teams"])

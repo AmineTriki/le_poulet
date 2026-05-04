@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import NavBar from "@components/NavBar";
 
 const TESTIMONIALS_EN = [
   'BWAK BWAK ★★★★★',
@@ -68,32 +69,7 @@ export default function LandingPage() {
         />
       ))}
 
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-poulet-feather/20 bg-poulet-black/90 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="font-heading text-poulet-gold text-2xl tracking-wider">LE POULET</div>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/rules"
-              className="font-mono text-poulet-feather text-xs uppercase hover:text-poulet-gold transition-colors hidden md:block"
-            >
-              Rules
-            </Link>
-            <Link
-              href="/join"
-              className="font-mono text-poulet-feather text-xs uppercase hover:text-poulet-gold transition-colors hidden md:block"
-            >
-              Join
-            </Link>
-            <Link
-              href="/create"
-              className="bg-poulet-gold text-poulet-black font-heading text-sm px-4 py-1.5 uppercase hover:brightness-110 transition-all"
-            >
-              Play Now
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <NavBar />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">

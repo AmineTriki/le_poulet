@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.config import settings
+import app.models  # noqa: F401 — ensures all models are registered with SQLModel metadata
 
 _is_sqlite = settings.database_url.startswith("sqlite")
 
