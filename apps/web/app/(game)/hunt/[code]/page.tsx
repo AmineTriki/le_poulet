@@ -248,6 +248,7 @@ export default function HuntPage() {
             circle={circle}
             barLat={gameState?.bar_lat ?? undefined}
             barLng={gameState?.bar_lng ?? undefined}
+            barName={gameState?.bar_name ?? undefined}
             playerToken={session?.playerToken}
           />
 
