@@ -84,7 +84,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
           <div className="font-heading text-poulet-feather/50 text-sm tracking-[0.5em] uppercase mb-6">
-            Free · Open Source · Bilingual
+            Free · No Account Needed · Bilingual
           </div>
           <h1
             className="font-heading text-poulet-gold leading-none mb-4"
@@ -366,8 +366,7 @@ export default function LandingPage() {
             PLAY TONIGHT.
           </h2>
           <p className="font-body text-poulet-cream text-xl mb-12 italic max-w-2xl mx-auto">
-            Free forever. No account needed. Works in any browser. Open source. Your friends are
-            waiting.
+            Free forever. No account needed. Works in any browser. Your friends are waiting.
           </p>
           <Link
             href="/create"
@@ -376,22 +375,18 @@ export default function LandingPage() {
             START THE HUNT 🐔
           </Link>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-8">
-            <a
-              href="https://github.com/AmineTriki/le_poulet"
-              className="font-mono text-poulet-feather text-sm hover:text-poulet-gold transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              ⭐ Star on GitHub
-            </a>
-            <span className="text-poulet-feather/30">|</span>
-            <span className="font-mono text-poulet-feather text-sm">Free &amp; Open Source</span>
-            <span className="text-poulet-feather/30">|</span>
             <Link
               href="/rules"
               className="font-mono text-poulet-feather text-sm hover:text-poulet-gold transition-colors"
             >
               Read the Rules
+            </Link>
+            <span className="text-poulet-feather/30">|</span>
+            <Link
+              href="/join"
+              className="font-mono text-poulet-feather text-sm hover:text-poulet-gold transition-colors"
+            >
+              Join a Game
             </Link>
           </div>
         </div>
@@ -411,17 +406,9 @@ export default function LandingPage() {
             <Link href="/join" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">
               Join
             </Link>
-            <a
-              href="https://github.com/AmineTriki/le_poulet"
-              className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub
-            </a>
           </div>
           <div className="font-mono text-poulet-feather text-xs opacity-60">
-            Free. Open Source. Not responsible for what happens at the bar.
+            Le Poulet 🐔 — Not responsible for what happens at the bar.
           </div>
         </div>
       </footer>
