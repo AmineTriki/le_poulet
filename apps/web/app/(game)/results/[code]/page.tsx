@@ -4,24 +4,43 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
-interface Team { id: string; name: string; color: string; score: number; found_order: number | null; }
+interface Team {
+  id: string;
+  name: string;
+  color: string;
+  score: number;
+  chaos_points: number;
+  found_order: number | null;
+}
+
+interface GameInfo {
+  pot_total: number;
+  chaos_mode: boolean;
+}
 
 export default function ResultsPage() {
   const { code } = useParams<{ code: string }>();
   const [teams, setTeams] = useState<Team[]>([]);
+  const [game, setGame] = useState<GameInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     fetch(`${API}/api/v1/games/${code}`)
-      .then((r) => r.json() as Promise<{ id: string }>)
-      .then((g) => fetch(`${API}/api/v1/teams/${g.id}/all`))
+      .then((r) => r.json() as Promise<{ id: string; pot_total: number; chaos_mode: boolean }>)
+      .then((g) => {
+        setGame({ pot_total: g.pot_total, chaos_mode: g.chaos_mode });
+        return fetch(`${API}/api/v1/teams/${g.id}/all`);
+      })
       .then((r) => r.json() as Promise<Team[]>)
-      .then((t) => { setTeams([...t].sort((a, b) => b.score - a.score)); setLoading(false); })
+      .then((t) => {
+        setTeams([...t].sort((a, b) => (a.found_order ?? 999) - (b.found_order ?? 999) || b.chaos_points - a.chaos_points));
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [code]);
 
-  const winner = teams[0];
+  const winner = teams.find((t) => t.found_order === 1) ?? teams[0];
 
   return (
     <div className="min-h-screen bg-poulet-black px-6 py-20">
@@ -35,13 +54,16 @@ export default function ResultsPage() {
 
         {winner && !loading && (
           <div className="border-2 border-poulet-gold bg-poulet-gold/10 p-8 text-center shadow-gold">
-            <div className="font-mono text-poulet-gold text-xs uppercase tracking-widest mb-2">Winner</div>
+            <div className="font-mono text-poulet-gold text-xs uppercase tracking-widest mb-2">First to Find</div>
             <div className="font-heading text-poulet-gold text-5xl uppercase mb-2">{winner.name}</div>
-            <div className="font-mono text-poulet-cream text-3xl">{winner.score.toLocaleString()} pts</div>
+            <div className="font-mono text-poulet-cream text-xl">🍺 Drinks are on the pot!</div>
+            {game && game.pot_total > 0 && (
+              <div className="font-mono text-poulet-gold text-2xl mt-2">💰 ${game.pot_total} pot</div>
+            )}
           </div>
         )}
 
-        {loading && <div className="font-mono text-poulet-feather text-center animate-pulse">Loading scores...</div>}
+        {loading && <div className="font-mono text-poulet-feather text-center animate-pulse">Loading results...</div>}
 
         <div className="space-y-2">
           {teams.map((team, i) => (
@@ -49,12 +71,16 @@ export default function ResultsPage() {
               <span className="font-mono text-poulet-gold w-8 text-right text-lg">#{i + 1}</span>
               <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: team.color }} />
               <span className="font-body text-poulet-cream flex-1 text-lg">{team.name}</span>
-              {team.found_order && (
-                <span className="font-mono text-poulet-green text-xs border border-poulet-green/40 px-2 py-0.5">
-                  Found #{team.found_order}
-                </span>
-              )}
-              <span className="font-mono text-poulet-gold text-lg">{team.score.toLocaleString()}</span>
+              <div className="text-right">
+                {team.found_order ? (
+                  <div className="font-mono text-poulet-green text-sm">🏆 Found #{team.found_order}</div>
+                ) : (
+                  <div className="font-mono text-poulet-feather/40 text-sm">Did not find</div>
+                )}
+                {game?.chaos_mode && team.chaos_points > 0 && (
+                  <div className="font-mono text-poulet-gold text-xs">⚡ {team.chaos_points.toLocaleString()} chaos pts</div>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -533,8 +533,8 @@ export default function CreatePage() {
                 { label: "Head Start", value: `${form.headStartMinutes} min` },
                 { label: "Duration", value: `${form.gameDurationHours} hrs` },
                 {
-                  label: "Buy-In",
-                  value: form.buyInAmount === 0 ? "Free" : `$${form.buyInAmount}/person`,
+                  label: "Pot",
+                  value: form.buyInAmount === 0 ? "Free night" : `$${form.buyInAmount}/person → $${totalPot} total`,
                 },
                 { label: "Chaos Mode", value: form.chaosMode ? "ON ⚡" : "Off" },
               ].map((item) => (

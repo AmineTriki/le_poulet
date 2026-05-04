@@ -47,6 +47,8 @@ interface GameState {
   game_ends_at: string | null;
   language: string;
   chaos_mode: boolean;
+  buy_in_amount: number;
+  pot_total: number;
 }
 
 function useTimer(targetIso: string | null): string {
@@ -101,7 +103,7 @@ export default function HuntPage() {
         circle: { center_lat: number; center_lng: number; radius_m: number } | null;
       };
       setGameState(data.game);
-      setTeams([...data.teams].sort((a, b) => b.score - a.score));
+      setTeams([...data.teams].sort((a, b) => (a.found_order ?? 999) - (b.found_order ?? 999) || b.chaos_points - a.chaos_points));
 
       // Figure out my team
       const me = data.players.find((p) => p.id === session?.playerId);
@@ -174,7 +176,7 @@ export default function HuntPage() {
       const res = await fetch(`${API}/api/v1/teams/${gameState.id}/all`).catch(() => null);
       if (res?.ok) {
         const t = await res.json() as Team[];
-        setTeams([...t].sort((a, b) => b.score - a.score));
+        setTeams([...t].sort((a, b) => (a.found_order ?? 999) - (b.found_order ?? 999) || b.chaos_points - a.chaos_points));
       }
     }, 15_000);
     return () => clearInterval(poll);
@@ -249,15 +251,23 @@ export default function HuntPage() {
             playerToken={session?.playerToken}
           />
 
-          {/* My team score overlay */}
+          {/* My team overlay */}
           {myTeamId.current && (() => {
             const myTeam = teams.find((t) => t.id === myTeamId.current);
             return myTeam ? (
-              <div className="absolute bottom-4 left-4 z-[1000] bg-poulet-black/90 border px-3 py-2" style={{ borderColor: myTeam.color }}>
+              <div className="absolute bottom-4 left-4 z-[1000] bg-poulet-black/90 border px-3 py-2 space-y-0.5" style={{ borderColor: myTeam.color }}>
                 <div className="font-mono text-xs text-poulet-feather uppercase">{myTeam.name}</div>
-                <div className="font-heading text-2xl" style={{ color: myTeam.color }}>
-                  {myTeam.score.toLocaleString()} pts
-                </div>
+                {gameState?.chaos_mode && (
+                  <div className="font-heading text-xl" style={{ color: myTeam.color }}>
+                    ⚡ {myTeam.chaos_points.toLocaleString()} chaos pts
+                  </div>
+                )}
+                {myTeam.found_order && (
+                  <div className="font-mono text-poulet-green text-xs">🏆 Found #{myTeam.found_order}</div>
+                )}
+                {gameState && gameState.pot_total > 0 && (
+                  <div className="font-mono text-poulet-gold text-xs">💰 Pot: ${gameState.pot_total}</div>
+                )}
               </div>
             ) : null;
           })()}
@@ -266,8 +276,11 @@ export default function HuntPage() {
         {/* Sidebar: Leaderboard */}
         {showSidebar && (
           <div className="w-full md:w-72 flex flex-col border-l border-poulet-feather/20 overflow-y-auto">
-            <div className="p-4 border-b border-poulet-feather/20">
-              <div className="font-heading text-poulet-gold text-xl uppercase">Leaderboard</div>
+            <div className="p-4 border-b border-poulet-feather/20 space-y-1">
+              <div className="font-heading text-poulet-gold text-xl uppercase">Teams</div>
+              {gameState && gameState.pot_total > 0 && (
+                <div className="font-mono text-poulet-gold text-xs">💰 Pot: ${gameState.pot_total} — first team found drinks free</div>
+              )}
             </div>
             <div className="flex-1 p-3 space-y-2">
               {teams.map((team, i) => (
@@ -281,12 +294,11 @@ export default function HuntPage() {
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: team.color }} />
                   <div className="flex-1 min-w-0">
                     <div className="font-body text-poulet-cream text-sm truncate">{team.name}</div>
-                    {team.found_order && (
-                      <div className="font-mono text-poulet-gold text-xs">Found #{team.found_order}</div>
-                    )}
-                  </div>
-                  <div className="font-mono text-sm" style={{ color: team.color }}>
-                    {team.score.toLocaleString()}
+                    {team.found_order ? (
+                      <div className="font-mono text-poulet-green text-xs">🏆 Found #{team.found_order} — drinks free!</div>
+                    ) : gameState?.chaos_mode ? (
+                      <div className="font-mono text-poulet-feather text-xs">⚡ {team.chaos_points} chaos pts</div>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -308,7 +320,7 @@ export default function HuntPage() {
                   <span className="font-mono text-poulet-gold text-xs uppercase border border-poulet-gold/40 px-1.5 py-0.5">
                     {challenge.category}
                   </span>
-                  <span className="font-mono text-poulet-gold text-xs">+{challenge.points}pts</span>
+                  <span className="font-mono text-poulet-gold text-xs">+{challenge.points} chaos pts</span>
                 </div>
                 <div className="font-heading text-poulet-cream text-lg leading-tight">
                   {lang === "fr" ? challenge.title_fr : challenge.title_en}

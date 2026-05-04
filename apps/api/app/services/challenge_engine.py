@@ -68,7 +68,7 @@ async def score_submission(
             submission.points_awarded = points
             team = await session.get(Team, submission.team_id)
             if team:
-                team.score += points
+                team.chaos_points += points
                 session.add(team)
 
     session.add(submission)
