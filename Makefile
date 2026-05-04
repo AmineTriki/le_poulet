@@ -27,6 +27,15 @@ migrate-new:
 seed:
 	cd apps/api && uv run python -m scripts.seed
 
+test-game:
+	cd apps/api && uv run python -m scripts.seed_test_game
+
+simulate:
+	cd apps/api && uv run python -m scripts.simulate_game --players 8 --duration 60
+
+simulate-fast:
+	cd apps/api && uv run python -m scripts.simulate_game --players 4 --duration 30 --fast
+
 build:
 	pnpm turbo build
 

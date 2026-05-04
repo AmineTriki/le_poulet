@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import nextDynamic from "next/dynamic";
 import { loadSession } from "@hooks/useGameSession";
 import { useGameSocket } from "@hooks/useGameSocket";
@@ -70,9 +70,11 @@ function useTimer(targetIso: string | null): string {
   return display;
 }
 
-export default function HuntPage() {
+function HuntPageInner() {
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const debugMode = searchParams.get("debug") === "true";
   const session = typeof window !== "undefined" ? loadSession() : null;
 
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -83,6 +85,7 @@ export default function HuntPage() {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [challengeSubmitting, setChallengeSubmitting] = useState(false);
   const [challengeDone, setChallengeDone] = useState(false);
+  const [wsLog, setWsLog] = useState<string[]>([]);
   const myTeamId = useRef<string | null>(null);
 
   const isHeadStart = gameState?.status === "head_start";
@@ -183,6 +186,9 @@ export default function HuntPage() {
   }, [API, gameState?.id]);
 
   const handleWsMessage = useCallback((msg: WsMessage) => {
+    if (debugMode) {
+      setWsLog((prev) => [`${new Date().toISOString().slice(11, 19)} ${msg.type}`, ...prev].slice(0, 50));
+    }
     if (msg.type === "location:update") {
       setPlayers((prev) => {
         const idx = prev.findIndex((p) => p.id === msg.player_id);
@@ -362,6 +368,83 @@ export default function HuntPage() {
           <div className="font-mono text-poulet-feather text-xs mt-1">until hunt begins</div>
         </div>
       )}
+
+      {/* Debug panel — visible only with ?debug=true */}
+      {debugMode && (
+        <div className="border-t border-red-500/40 bg-poulet-black flex-shrink-0 p-3 space-y-2">
+          <div className="font-mono text-red-400 text-xs uppercase mb-1">⚠ Debug Mode</div>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              className="font-mono text-xs border border-poulet-feather/40 px-2 py-1 text-poulet-feather hover:border-poulet-gold hover:text-poulet-gold transition-colors"
+              onClick={() => {
+                if (!session?.playerToken) return;
+                const angle = Math.random() * 2 * Math.PI;
+                const dist = 100 / 111_000;
+                const lat = (players.find((p) => p.isMe)?.lat ?? 45.5086) + Math.sin(angle) * dist;
+                const lng = (players.find((p) => p.isMe)?.lng ?? -73.5541) + Math.cos(angle) * dist;
+                void fetch(`${API}/api/v1/locations/update`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ player_token: session.playerToken, lat, lng, accuracy_m: 10 }),
+                });
+              }}
+            >
+              📍 Fake move
+            </button>
+            <button
+              className="font-mono text-xs border border-poulet-feather/40 px-2 py-1 text-poulet-feather hover:border-poulet-gold hover:text-poulet-gold transition-colors"
+              onClick={() => {
+                if (!gameState?.id) return;
+                void fetch(`${API}/api/v1/games/${code}/state`).then((r) => r.json()).then((d) => {
+                  // eslint-disable-next-line no-console
+                  console.log("[debug] state", d);
+                  alert(JSON.stringify({ status: d.game?.status, teams: d.teams?.length, players: d.players?.length }, null, 2));
+                });
+              }}
+            >
+              🔍 Print state
+            </button>
+            {myTeamId.current && gameState?.id && (
+              <button
+                className="font-mono text-xs border border-poulet-green/40 px-2 py-1 text-poulet-green hover:border-poulet-green hover:text-poulet-green transition-colors"
+                onClick={() => {
+                  void fetch(`${API}/api/v1/chickens/found`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ game_id: gameState.id, player_token: session?.playerToken }),
+                  }).then((r) => r.json()).then((d) => alert(JSON.stringify(d, null, 2)));
+                }}
+              >
+                🏆 Simulate find
+              </button>
+            )}
+          </div>
+          {/* WS log */}
+          <div className="font-mono text-xs text-poulet-feather/60 max-h-24 overflow-y-auto space-y-0.5">
+            {wsLog.length === 0 ? <div className="italic">No WS messages yet…</div> : wsLog.map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
+          </div>
+          {/* GPS accuracy of "me" */}
+          {players.find((p) => p.isMe) && (
+            <div className="font-mono text-xs text-poulet-feather/60">
+              My pos: {players.find((p) => p.isMe)?.lat.toFixed(5)}, {players.find((p) => p.isMe)?.lng.toFixed(5)}
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function HuntPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen bg-poulet-black flex items-center justify-center">
+        <div className="font-mono text-poulet-gold animate-pulse">Loading…</div>
+      </div>
+    }>
+      <HuntPageInner />
+    </React.Suspense>
   );
 }
