@@ -5,10 +5,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Le Poulet — City-Wide Chicken Hunt",
   description: "The free, chaotic, bilingual city-wide chicken hunt game. No app needed.",
+  metadataBase: new URL("https://lepoulet.vercel.app"),
   openGraph: {
     title: "Le Poulet — Hunt Your Friends",
     description: "The free, chaotic, bilingual city-wide chicken hunt game.",
-    images: ["/og-image.png"],
+    url: "https://lepoulet.vercel.app",
+    images: [{ url: "/og-image.png" }],
   },
 };
 

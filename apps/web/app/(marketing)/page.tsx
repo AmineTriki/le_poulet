@@ -112,6 +112,11 @@ export default function LandingPage() {
               Join a Game
             </Link>
           </div>
+          <div className="mt-4">
+            <Link href="/download" className="font-mono text-poulet-feather/50 text-xs hover:text-poulet-feather transition-colors">
+              📱 Get the app
+            </Link>
+          </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-6 font-mono text-poulet-feather text-xs uppercase">
             <span>🗺️ Live GPS map</span>
             <span>·</span>
@@ -214,9 +219,9 @@ export default function LandingPage() {
             },
             {
               num: "03",
-              emoji: "🏆",
-              title: "First Team Wins, Last Team Buys",
-              desc: "Find the chicken first for maximum points. Last team to arrive buys a round for everyone. Always. No exceptions.",
+              emoji: "🍺",
+              title: "First Team Drinks Free, Last Team Gets the Gage",
+              desc: "First team finds Chicken = drinks free from the pot. Last team = un gage. Always. Points are chaos weapons currency — not prizes.",
             },
           ].map((step) => (
             <div
@@ -292,8 +297,7 @@ export default function LandingPage() {
             </div>
             <h2 className="font-heading text-poulet-gold text-6xl uppercase">Chaos Mode ⚡</h2>
             <p className="font-body text-poulet-feather mt-4 italic text-lg max-w-xl mx-auto">
-              Arm your team with weapons of mild destruction. Spend points. Cause mayhem. Regret
-              nothing.
+              Arm your team with weapons of mild destruction. Earn points through challenges. Spend them on weapons. Points are chaos currency — they have nothing to do with who drinks free.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -397,15 +401,11 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="font-heading text-poulet-gold text-xl">LE POULET</div>
           <div className="flex flex-wrap gap-6">
-            <Link href="/rules" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">
-              Rules
-            </Link>
-            <Link href="/create" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">
-              Create
-            </Link>
-            <Link href="/join" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">
-              Join
-            </Link>
+            <Link href="/rules" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">Rules</Link>
+            <Link href="/create" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">Create</Link>
+            <Link href="/join" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">Join</Link>
+            <Link href="/download" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">Download</Link>
+            <Link href="/about" className="font-mono text-poulet-feather text-xs hover:text-poulet-gold transition-colors">About</Link>
           </div>
           <div className="font-mono text-poulet-feather text-xs opacity-60">
             Le Poulet 🐔 — Not responsible for what happens at the bar.

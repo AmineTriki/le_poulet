@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { saveSession } from "@hooks/useGameSession";
 
 type CostumePolicy = "required" | "encouraged" | "optional" | "none";
+type GageType = "round" | "dare" | "custom";
 
 interface GameFormData {
   name: string;
@@ -23,6 +24,8 @@ interface GameFormData {
   allowTexts: boolean;
   allowHints: boolean;
   allowSocialMedia: boolean;
+  gageType: GageType;
+  gageCustomText: string;
 }
 
 const EMOJIS = [
@@ -49,6 +52,8 @@ const DEFAULT_FORM: GameFormData = {
   allowTexts: true,
   allowHints: false,
   allowSocialMedia: true,
+  gageType: "round",
+  gageCustomText: "",
 };
 
 export default function CreatePage() {
@@ -334,6 +339,47 @@ export default function CreatePage() {
                 <div className="mt-3 font-mono text-poulet-gold text-lg">
                   💰 Estimated pot: ${totalPot} CAD
                 </div>
+              )}
+              <p className="font-mono text-poulet-feather/50 text-xs mt-2">
+                Chicken uses this for drinks while hiding. First team to find Chicken drinks free until pot runs out.
+              </p>
+            </div>
+
+            {/* Un gage */}
+            <div>
+              <label className="font-mono text-poulet-feather text-xs uppercase mb-2 block">
+                Un Gage for Last Team <span className="text-poulet-gold">(always applies)</span>
+              </label>
+              <p className="font-body text-poulet-feather/50 text-xs mb-3 italic">
+                The last team to find the Chicken always gets a gage. Non-negotiable.
+              </p>
+              <div className="space-y-2">
+                {[
+                  { id: "round" as GageType, emoji: "🍺", label: "Buys a round for everyone (default)" },
+                  { id: "dare" as GageType, emoji: "🎭", label: "Does a dare chosen by other teams" },
+                  { id: "custom" as GageType, emoji: "✏️", label: "Custom gage" },
+                ].map(({ id, emoji, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => update("gageType", id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 border text-left transition-all ${
+                      form.gageType === id
+                        ? "border-poulet-gold bg-poulet-gold/10 text-poulet-gold"
+                        : "border-poulet-feather/30 text-poulet-feather hover:border-poulet-gold"
+                    }`}
+                  >
+                    <span>{emoji}</span>
+                    <span className="font-body text-sm">{label}</span>
+                  </button>
+                ))}
+              </div>
+              {form.gageType === "custom" && (
+                <input
+                  className="mt-3 w-full bg-transparent border border-poulet-feather/40 text-poulet-cream font-body px-4 py-3 focus:outline-none focus:border-poulet-gold transition-colors"
+                  placeholder="Describe the gage..."
+                  value={form.gageCustomText}
+                  onChange={(e) => update("gageCustomText", e.target.value)}
+                />
               )}
             </div>
 
