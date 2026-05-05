@@ -34,8 +34,16 @@ export default function RulesPage() {
               body: "If you arrive at a bar and the Chicken isn&apos;t there: finish a drink, mark it visited, move on. The first team to physically locate and confront the Chicken wins the top bonus. Second and third teams score progressively less.",
             },
             {
-              title: "Scoring",
-              body: "1st to find: +100pts. 2nd: +75pts. 3rd: +50pts. After that: 0 bonus. Challenge points are cumulative throughout the hunt. The team with the most total points wins the pot. Last team to find the Chicken buys everyone a round. Always.",
+              title: "The Pot",
+              body: "Before the game, everyone chips in. The Chicken takes the pot and uses it to buy drinks while hiding. The first team to find the Chicken drinks free until the pot runs out. That&apos;s the whole point. Hunt fast.",
+            },
+            {
+              title: "Chaos Points",
+              body: "Earned by completing photo and video challenges throughout the hunt. Spent on weapons in Chaos Mode. Points are for chaos bragging rights — they have nothing to do with the pot or who drinks free.",
+            },
+            {
+              title: "The Un Gage",
+              body: "The last team to find the Chicken always receives an un gage — a dare or forfeit decided before the game starts. Buying a round is the default. No exceptions. No negotiations. The gage is sacred.",
             },
             {
               title: "The Chicken&apos;s View",
@@ -79,6 +87,12 @@ export default function RulesPage() {
               Join a Game
             </Link>
           </div>
+          <p className="font-mono text-poulet-feather/50 text-xs mt-4">
+            Play in browser or{" "}
+            <Link href="/download" className="hover:text-poulet-gold transition-colors">
+              get the app →
+            </Link>
+          </p>
         </div>
       </div>
     </main>
