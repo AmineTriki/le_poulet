@@ -1,8 +1,24 @@
 "use client";
 export const dynamic = 'force-dynamic';
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { saveSession } from "@hooks/useGameSession";
+
+interface GameSuggestion {
+  num_chickens: number;
+  team_size: number;
+  num_teams: number;
+  description: string;
+  pot_examples: Record<string, number>;
+}
+
+interface BarArea {
+  name: string;
+  center_lat: number;
+  center_lng: number;
+  bar_count: number;
+  bars: { id: string; name: string; lat: number; lng: number }[];
+}
 
 type CostumePolicy = "required" | "encouraged" | "optional" | "none";
 type GageType = "round" | "dare" | "custom";
@@ -63,6 +79,42 @@ export default function CreatePage() {
   const [newPlayer, setNewPlayer] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [playerCountEstimate, setPlayerCountEstimate] = useState(10);
+  const [suggestion, setSuggestion] = useState<GameSuggestion | null>(null);
+  const [areas, setAreas] = useState<BarArea[]>([]);
+  const [loadingAreas, setLoadingAreas] = useState(false);
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
+
+  const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+  const fetchSuggestion = useCallback(async (count: number) => {
+    try {
+      const r = await fetch(`${API}/api/v1/suggest/config?player_count=${count}`);
+      if (r.ok) {
+        const s = (await r.json()) as GameSuggestion;
+        setSuggestion(s);
+        update("numChickens", s.num_chickens);
+        update("teamSize", s.team_size);
+      }
+    } catch { /* silent */ }
+  }, [API]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchAreas = useCallback(async () => {
+    setLoadingAreas(true);
+    try {
+      const r = await fetch(`${API}/api/v1/suggest/areas?city=${form.city.toLowerCase()}`);
+      if (r.ok) setAreas((await r.json()) as BarArea[]);
+    } catch { /* silent */ }
+    setLoadingAreas(false);
+  }, [API, form.city]);
+
+  useEffect(() => {
+    void fetchSuggestion(playerCountEstimate);
+  }, [playerCountEstimate, fetchSuggestion]);
+
+  useEffect(() => {
+    if (step === 4) void fetchAreas();
+  }, [step, fetchAreas]);
 
   const update = <K extends keyof GameFormData>(key: K, value: GameFormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -250,8 +302,36 @@ export default function CreatePage() {
               ))}
               {form.players.length === 0 && (
                 <div className="border border-dashed border-poulet-feather/20 p-8 text-center text-poulet-feather font-body italic">
-                  No players yet. Add some above, or share the link after creating and let them
-                  join.
+                  No players yet. Add some above, or share the link after creating and let them join.
+                </div>
+              )}
+            </div>
+
+            {/* Player count estimate + suggestion */}
+            <div className="border border-poulet-feather/20 p-5 space-y-4 bg-poulet-feather/5">
+              <div>
+                <label className="font-mono text-poulet-feather text-xs uppercase mb-2 block">
+                  Estimated total players (for team suggestions)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[4, 6, 8, 10, 15, 20, 25, 30, 40].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setPlayerCountEstimate(n)}
+                      className={pillClass(playerCountEstimate === n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {suggestion && (
+                <div className="border border-poulet-gold/40 bg-poulet-gold/5 px-4 py-3">
+                  <div className="font-mono text-poulet-gold text-xs uppercase mb-1">Suggested Config</div>
+                  <div className="font-heading text-poulet-cream text-xl">{suggestion.description}</div>
+                  <div className="font-mono text-poulet-feather/60 text-xs mt-1">
+                    Pot with $10/person: ${suggestion.pot_examples["10"] ?? playerCountEstimate * 10}
+                  </div>
                 </div>
               )}
             </div>
@@ -266,6 +346,11 @@ export default function CreatePage() {
             <div>
               <label className="font-mono text-poulet-feather text-xs uppercase mb-2 block">
                 Number of Chickens
+                {suggestion && (
+                  <span className="ml-2 text-poulet-gold/60 normal-case">
+                    (suggested: {suggestion.num_chickens} for {playerCountEstimate} players)
+                  </span>
+                )}
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -278,6 +363,11 @@ export default function CreatePage() {
                   </button>
                 ))}
               </div>
+              {suggestion && (
+                <p className="font-mono text-poulet-feather/40 text-xs mt-2">
+                  ~{suggestion.num_teams} team{suggestion.num_teams !== 1 ? "s" : ""} of {suggestion.team_size} hunters
+                </p>
+              )}
             </div>
 
             <div>
@@ -336,13 +426,24 @@ export default function CreatePage() {
                 ))}
               </div>
               {form.buyInAmount > 0 && (
-                <div className="mt-3 font-mono text-poulet-gold text-lg">
-                  💰 Estimated pot: ${totalPot} CAD
+                <div className="mt-4 border border-poulet-gold/40 bg-poulet-gold/5 p-4">
+                  <div className="font-mono text-poulet-feather/60 text-xs uppercase mb-1">The Pot</div>
+                  <div className="font-heading text-poulet-gold text-4xl">
+                    ${form.buyInAmount * (form.players.length || playerCountEstimate)}
+                  </div>
+                  <div className="font-mono text-poulet-feather/50 text-xs mt-1">
+                    {form.players.length > 0 ? form.players.length : playerCountEstimate} players × ${form.buyInAmount}
+                  </div>
+                  <div className="font-mono text-poulet-feather/40 text-xs mt-3 border-t border-poulet-feather/10 pt-3">
+                    Chicken runs a tab while hiding. First team to find them drinks free until the pot runs out.
+                  </div>
                 </div>
               )}
-              <p className="font-mono text-poulet-feather/50 text-xs mt-2">
-                Chicken uses this for drinks while hiding. First team to find Chicken drinks free until pot runs out.
-              </p>
+              {form.buyInAmount === 0 && (
+                <p className="font-mono text-poulet-feather/40 text-xs mt-2">
+                  Free night — bragging rights only. Still fun.
+                </p>
+              )}
             </div>
 
             {/* Un gage */}
@@ -440,28 +541,62 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* Step 4: Bar */}
+        {/* Step 4: Bar Areas */}
         {step === 4 && (
           <div className="space-y-6">
-            <h1 className="font-heading text-poulet-gold text-5xl uppercase">Hiding Bar</h1>
+            <h1 className="font-heading text-poulet-gold text-5xl uppercase">Best Areas 🍺</h1>
             <p className="font-body text-poulet-feather italic leading-relaxed">
-              The Chicken picks their hiding bar after the game starts — not before. This keeps
-              things fair and surprising for everyone.
+              The Chicken picks their exact bar once the game starts. Here are the densest bar areas in <span className="text-poulet-gold">{form.city}</span> — share these with your group so everyone knows the hunting zone.
             </p>
-            <div className="border border-poulet-feather/20 p-8 text-center space-y-4">
-              <div className="text-6xl">🍺</div>
-              <div className="font-heading text-poulet-gold text-2xl uppercase">
-                Bar Selection Happens In-Game
+
+            {loadingAreas ? (
+              <div className="border border-poulet-feather/20 p-12 text-center">
+                <div className="font-mono text-poulet-feather/50 text-sm animate-pulse">Loading bar data…</div>
               </div>
-              <p className="font-body text-poulet-cream/70 leading-relaxed max-w-sm mx-auto">
-                Once the hunt starts, the Chicken sees a private map of nearby bars in their city.
-                They pick one, travel there, and start hiding. The clock starts for everyone else.
-              </p>
-            </div>
+            ) : areas.length > 0 ? (
+              <div className="space-y-3">
+                {areas.map((area, i) => (
+                  <div key={area.name} className="border border-poulet-feather/20 hover:border-poulet-gold/50 transition-all">
+                    <button
+                      onClick={() => setExpandedArea(expandedArea === area.name ? null : area.name)}
+                      className="w-full flex items-center gap-4 px-4 py-4 text-left"
+                    >
+                      <div className={`w-7 h-7 flex items-center justify-center font-heading text-sm ${i === 0 ? "bg-poulet-gold text-poulet-black" : "border border-poulet-feather/40 text-poulet-feather"}`}>
+                        {i + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-heading text-poulet-cream text-lg uppercase">{area.name}</div>
+                        <div className="font-mono text-poulet-feather/50 text-xs">{area.bar_count} bars nearby</div>
+                      </div>
+                      <span className="text-poulet-feather/40 text-sm">{expandedArea === area.name ? "▾" : "▸"}</span>
+                    </button>
+                    {expandedArea === area.name && (
+                      <div className="px-4 pb-4 border-t border-poulet-feather/10">
+                        <div className="font-mono text-poulet-feather/50 text-xs uppercase mb-3 pt-3">Bars in this area</div>
+                        <div className="grid grid-cols-2 gap-1">
+                          {area.bars.slice(0, 10).map((bar) => (
+                            <div key={bar.id} className="font-body text-poulet-cream/70 text-sm py-1">• {bar.name}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-poulet-feather/20 p-8 text-center space-y-3">
+                <div className="text-4xl">🍺</div>
+                <div className="font-heading text-poulet-gold text-xl uppercase">Bar data unavailable</div>
+                <p className="font-body text-poulet-feather/60 text-sm">
+                  No worries — the Chicken picks from a live map of nearby bars when the game starts.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-3 gap-3 text-center">
               {[
                 { icon: "🗺️", label: "Private map for Chicken" },
-                { icon: "⏱️", label: "30min head start" },
+                { icon: "⏱️", label: `${form.headStartMinutes}min head start` },
                 { icon: "🔒", label: "Location locked once chosen" },
               ].map((item) => (
                 <div key={item.label} className="border border-poulet-feather/20 p-4">
