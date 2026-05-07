@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
+import { saveSession } from "@/utils/session";
+
+const EMOJIS = ["🦊","🐺","🦁","🐯","🐻","🦅","🐉","🦄","🐸","🦋","🐬","🦉","🦝","🐨","🦘"];
 
 export default function JoinScreen() {
   const [code, setCode] = useState("");
@@ -31,6 +34,16 @@ export default function JoinScreen() {
         setLoading(false);
         return;
       }
+      const player = (await pr.json()) as { player_id: string; token: string; emoji: string };
+      await saveSession({
+        gameCode: code.toUpperCase(),
+        gameId: g.id,
+        playerId: player.player_id,
+        playerToken: player.token,
+        playerName: name.trim(),
+        playerEmoji: player.emoji ?? EMOJIS[Math.floor(Math.random() * EMOJIS.length)] ?? "🐔",
+        isHost: false,
+      });
       router.push(`/game/lobby/${code.toUpperCase()}`);
     } catch {
       setError("Something went wrong. Check your connection.");
