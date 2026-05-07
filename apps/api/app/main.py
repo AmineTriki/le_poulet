@@ -7,7 +7,7 @@ import sentry_sdk
 from app.config import settings
 from app.database import init_db
 from app.redis import close_redis
-from app.routers import games, players, teams, chickens, challenges, locations, bars, weapons, costumes
+from app.routers import games, players, teams, chickens, challenges, locations, bars, weapons, costumes, suggestions
 from app.routers.auth import router as auth_router
 from app.websockets.handler import router as ws_router
 from app.services.scheduler import run_scheduler
@@ -53,6 +53,7 @@ app.include_router(locations.router, prefix="/api/v1/locations", tags=["location
 app.include_router(bars.router, prefix="/api/v1/bars", tags=["bars"])
 app.include_router(weapons.router, prefix="/api/v1/weapons", tags=["weapons"])
 app.include_router(costumes.router, prefix="/api/v1/costumes", tags=["costumes"])
+app.include_router(suggestions.router, prefix="/api/v1/suggest", tags=["suggestions"])
 app.include_router(ws_router, prefix="/ws", tags=["websocket"])
 
 

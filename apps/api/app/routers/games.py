@@ -135,9 +135,28 @@ async def start_existing_game(
         session.add(game)
 
     game = await start_game(session, game)
-    await manager.broadcast(game.id, {"type": "game:started", "game_id": game.id, "status": game.status})
+
+    players_result = await session.exec(select(Player).where(Player.game_id == game.id))
+    players_data = [
+        {"id": p.id, "name": p.name, "emoji": p.emoji, "role": p.role, "team_id": p.team_id}
+        for p in players_result.all()
+    ]
+    teams_result = await session.exec(select(Team).where(Team.game_id == game.id))
+    teams_data = [{"id": t.id, "name": t.name, "color": t.color} for t in teams_result.all()]
+
+    await manager.broadcast(game.id, {
+        "type": "game:started",
+        "game_id": game.id,
+        "status": game.status,
+        "players": players_data,
+        "teams": teams_data,
+        "head_start_ends_at": game.head_start_ends_at.isoformat() if game.head_start_ends_at else None,
+        "game_ends_at": game.game_ends_at.isoformat() if game.game_ends_at else None,
+    })
     return {
         "status": game.status,
+        "players": players_data,
+        "teams": teams_data,
         "head_start_ends_at": game.head_start_ends_at.isoformat() if game.head_start_ends_at else None,
         "game_ends_at": game.game_ends_at.isoformat() if game.game_ends_at else None,
     }
