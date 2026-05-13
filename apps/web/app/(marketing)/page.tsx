@@ -108,7 +108,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
           <div className="font-heading text-poulet-feather/50 text-sm tracking-[0.5em] uppercase mb-6">
-            Free · Open Source · Bilingual
+            Free to Play · Bilingual · Live Cash Pot
           </div>
           <h1
             className="font-heading text-poulet-gold leading-none mb-4"
@@ -119,8 +119,8 @@ export default function LandingPage() {
             FRIENDS.
           </h1>
           <p className="font-body text-poulet-cream text-xl mb-10 max-w-2xl mx-auto italic">
-            The free, chaotic, city-wide chicken hunt. No app needed. Works in your browser. Play
-            tonight.
+            The chaotic, city-wide chicken hunt. Free to play. Works in your browser. Players send
+            real cash to the pot — the Chicken takes it all.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -143,7 +143,7 @@ export default function LandingPage() {
             <span>·</span>
             <span>⚡ Chaos weapons</span>
             <span>·</span>
-            <span>🍺 Last team buys</span>
+            <span>💸 Live cash pot</span>
           </div>
         </div>
 
@@ -228,7 +228,7 @@ export default function LandingPage() {
               num: "01",
               emoji: "🐔",
               title: "One Person Becomes the Chicken",
-              desc: "They put on the suit (or don't), grab the communal pot, pick any bar in the city, and hide. They get a head start. You get a 6-letter code.",
+              desc: "They put on the suit (or don't), pick any bar in the city, and hide. Players send real cash to the live pot. Find the Chicken — take the pot. You get a 6-letter code.",
             },
             {
               num: "02",
@@ -240,7 +240,7 @@ export default function LandingPage() {
               num: "03",
               emoji: "🏆",
               title: "First Team Wins, Last Team Buys",
-              desc: "Find the chicken first for maximum points. Last team to arrive buys a round for everyone. Always. No exceptions.",
+              desc: "Find the Chicken first for maximum points and the live cash pot. Last team to arrive buys a round for everyone. Always. No exceptions.",
             },
           ].map((step) => (
             <div
@@ -304,6 +304,48 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Live Cash Pot section */}
+      <section className="py-24 px-6 max-w-6xl mx-auto">
+        <div className="border border-poulet-gold/40 bg-poulet-gold/5 p-12 text-center relative overflow-hidden">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(245,197,24,0.07) 0%, transparent 70%)",
+            }}
+          />
+          <div className="relative z-10">
+            <div className="font-mono text-poulet-gold text-xs uppercase tracking-widest mb-4">
+              The Stakes
+            </div>
+            <h2 className="font-heading text-poulet-gold text-5xl uppercase mb-6">
+              💸 La Cagnotte
+            </h2>
+            <p className="font-body text-poulet-cream text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
+              Before the hunt starts, players send real cash directly to the Chicken&apos;s pot.
+              Every contribution goes straight to the Chicken. If you find them — you take it all.
+              If not, the Chicken walks home richer.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-6 max-w-2xl mx-auto mb-10">
+              {[
+                { emoji: "💸", label: "Send cash", desc: "Any amount, instantly, from the app" },
+                { emoji: "🐔", label: "Pot grows live", desc: "Everyone sees the total in real time" },
+                { emoji: "🏆", label: "Winner takes all", desc: "First to find the Chicken claims the pot" },
+              ].map((item) => (
+                <div key={item.label} className="border border-poulet-feather/20 p-5">
+                  <div className="text-3xl mb-2">{item.emoji}</div>
+                  <div className="font-heading text-poulet-gold text-lg uppercase mb-1">{item.label}</div>
+                  <p className="font-mono text-poulet-feather/70 text-xs leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="inline-block border border-poulet-gold/30 px-6 py-2 font-mono text-poulet-feather/60 text-xs uppercase tracking-widest">
+              🔜 Coming soon — joining the waitlist is free
+            </div>
+          </div>
         </div>
       </section>
 
@@ -390,8 +432,7 @@ export default function LandingPage() {
             PLAY TONIGHT.
           </h2>
           <p className="font-body text-poulet-cream text-xl mb-12 italic max-w-2xl mx-auto">
-            Free forever. No account needed. Works in any browser. Open source. Your friends are
-            waiting.
+            Free to play. Works in any browser. Real cash on the line. Your friends are waiting.
           </p>
           <Link
             href="/create"
@@ -409,7 +450,7 @@ export default function LandingPage() {
               ⭐ Star on GitHub
             </a>
             <span className="text-poulet-feather/30">|</span>
-            <span className="font-mono text-poulet-feather text-sm">Free &amp; Open Source</span>
+            <span className="font-mono text-poulet-feather text-sm">Free to Play · Open Source</span>
             <span className="text-poulet-feather/30">|</span>
             <Link
               href="/rules"
@@ -445,7 +486,7 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="font-mono text-poulet-feather text-xs opacity-60">
-            Free. Open Source. Not responsible for what happens at the bar.
+            Free to play. Open source. Not responsible for what happens at the bar.
           </div>
         </div>
       </footer>

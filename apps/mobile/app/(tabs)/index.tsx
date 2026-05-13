@@ -8,7 +8,7 @@ export default function HomeScreen() {
       <View style={s.hero}>
         <Text style={s.chicken}>🐔</Text>
         <Text style={s.title}>LE POULET</Text>
-        <Text style={s.subtitle}>Hunt your friends across the city</Text>
+        <Text style={s.subtitle}>Hunt your friends. Win the pot.</Text>
       </View>
 
       <TouchableOpacity style={s.primary} onPress={() => router.push("/game/create")}>
@@ -22,8 +22,8 @@ export default function HomeScreen() {
       <View style={s.row}>
         {[
           { l: "City", v: "MTL" },
-          { l: "Free", v: "100%" },
-          { l: "Open Source", v: "✓" },
+          { l: "Play", v: "Free" },
+          { l: "Cash Pot", v: "💸" },
         ].map((x) => (
           <View key={x.l} style={s.statCard}>
             <Text style={s.statVal}>{x.v}</Text>
