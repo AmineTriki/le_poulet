@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 
 @pytest.mark.asyncio
@@ -7,6 +8,7 @@ async def test_bar_service_returns_cached():
     mock_redis = AsyncMock()
     mock_redis.get.return_value = '[{"id": "osm:123", "name": "Le Bar"}]'
     from app.services.bar_service import search_bars
+
     result = await search_bars(45.5017, -73.5673, 1500, mock_redis)
     assert len(result) == 1
     assert result[0]["name"] == "Le Bar"
@@ -34,8 +36,7 @@ async def test_bar_service_cache_miss_calls_api():
         ]
     }
 
-    import httpx
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import MagicMock, patch
 
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
@@ -47,7 +48,8 @@ async def test_bar_service_cache_miss_calls_api():
         MockClient.return_value.post = AsyncMock(return_value=mock_resp)
 
         from app.services.bar_service import search_bars
-        result = await search_bars(45.5017, -73.5673, 500, mock_redis)
+
+        await search_bars(45.5017, -73.5673, 500, mock_redis)
 
     assert mock_redis.setex.called
 
@@ -64,7 +66,8 @@ async def test_bar_service_filters_unnamed():
         ]
     }
 
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import MagicMock, patch
+
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
     mock_resp.json.return_value = mock_response_data
@@ -75,6 +78,7 @@ async def test_bar_service_filters_unnamed():
         MockClient.return_value.post = AsyncMock(return_value=mock_resp)
 
         from app.services.bar_service import search_bars
+
         result = await search_bars(45.5017, -73.5673, 500, mock_redis)
 
     assert len(result) == 1

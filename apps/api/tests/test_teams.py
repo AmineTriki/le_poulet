@@ -1,4 +1,5 @@
 import pytest
+
 from app.models.player import Player
 from app.services.team_builder import build_teams
 
@@ -24,14 +25,16 @@ async def test_build_teams_french_names():
     players = [Player(game_id="g1", name=f"P{i}", emoji="🐔") for i in range(4)]
     teams = await build_teams(players, 4, "fr")
     assert len(teams) == 1
-    fr_names = [
-        "Les Renards Rouges", "Les Loups Bleus", "Les Viperes Vertes", "Les Panthers Violets",
-        "Les Tigres Orange", "Les Faucons Jaunes", "Les Ours Noirs", "Les Aigles Blancs",
-    ]
     # Team name should be one of the French names
     assert teams[0].name in [
-        "Les Renards Rouges", "Les Loups Bleus", "Les Vipères Vertes", "Les Panthers Violets",
-        "Les Tigres Orange", "Les Faucons Jaunes", "Les Ours Noirs", "Les Aigles Blancs",
+        "Les Renards Rouges",
+        "Les Loups Bleus",
+        "Les Vipères Vertes",
+        "Les Panthers Violets",
+        "Les Tigres Orange",
+        "Les Faucons Jaunes",
+        "Les Ours Noirs",
+        "Les Aigles Blancs",
     ]
 
 

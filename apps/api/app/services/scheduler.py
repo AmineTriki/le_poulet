@@ -5,9 +5,10 @@ Background scheduler that drives game lifecycle events:
   - Chicken proximity alerts when a team is within 200m
   - ACTIVE → ENDED when game_ends_at is reached
 """
+
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -54,7 +55,7 @@ async def _maybe_shrink_circle(session: AsyncSession, game: Game) -> None:
         _circles[game.id] = state
 
     interval_sec = game.gps_shrink_interval_minutes * 60
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Determine if enough time has passed since last shrink (or game start)
     reference = game.head_start_ends_at or game.game_ends_at
@@ -62,7 +63,7 @@ async def _maybe_shrink_circle(session: AsyncSession, game: Game) -> None:
         return
 
     if reference.tzinfo is None:
-        reference = reference.replace(tzinfo=timezone.utc)
+        reference = reference.replace(tzinfo=UTC)
 
     elapsed_since_start = (now - reference).total_seconds()
     expected_shrinks = max(0, int(elapsed_since_start // interval_sec))
@@ -71,20 +72,23 @@ async def _maybe_shrink_circle(session: AsyncSession, game: Game) -> None:
         state = shrink_circle(state, game.bar_lat, game.bar_lng)
         _circles[game.id] = state
 
-        next_shrink_ts = int(
-            (reference.timestamp() + (state.shrink_count) * interval_sec)
-        )
+        next_shrink_ts = int(reference.timestamp() + (state.shrink_count) * interval_sec)
 
-        await manager.broadcast(game.id, {
-            "type": "circle:shrink",
-            "lat": state.center_lat,
-            "lng": state.center_lng,
-            "radius_m": state.radius_m,
-            "next_shrink_at": next_shrink_ts,
-        })
+        await manager.broadcast(
+            game.id,
+            {
+                "type": "circle:shrink",
+                "lat": state.center_lat,
+                "lng": state.center_lng,
+                "radius_m": state.radius_m,
+                "next_shrink_at": next_shrink_ts,
+            },
+        )
         logger.debug(
             "Game %s circle shrunk → %.0fm (shrink #%d)",
-            game.code, state.radius_m, state.shrink_count,
+            game.code,
+            state.radius_m,
+            state.shrink_count,
         )
 
 
@@ -92,9 +96,7 @@ async def _check_proximity_alerts(session: AsyncSession, game: Game) -> None:
     if game.bar_lat is None or game.bar_lng is None:
         return
 
-    players_result = await session.exec(
-        select(Player).where(Player.game_id == game.id)
-    )
+    players_result = await session.exec(select(Player).where(Player.game_id == game.id))
     players = list(players_result.all())
 
     chickens = [p for p in players if p.role == PlayerRole.CHICKEN]
@@ -103,23 +105,28 @@ async def _check_proximity_alerts(session: AsyncSession, game: Game) -> None:
     for hunter in hunters:
         assert hunter.last_lat is not None and hunter.last_lng is not None
         dist = haversine_distance(
-            hunter.last_lat, hunter.last_lng,
-            game.bar_lat, game.bar_lng,
+            hunter.last_lat,
+            hunter.last_lng,
+            game.bar_lat,
+            game.bar_lng,
         )
         if dist < DANGER_RADIUS_M:
             # Alert the chicken
             for chicken in chickens:
-                await manager.send_to_player(chicken.id, {
-                    "type": "chicken:alert",
-                    "distance_m": round(dist, 1),
-                    "team_id": hunter.team_id or "",
-                })
+                await manager.send_to_player(
+                    chicken.id,
+                    {
+                        "type": "chicken:alert",
+                        "distance_m": round(dist, 1),
+                        "team_id": hunter.team_id or "",
+                    },
+                )
 
 
 async def _tick() -> None:
     async with AsyncSessionLocal() as session:
         games = await _get_active_games(session)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for game in games:
             try:
@@ -127,7 +134,7 @@ async def _tick() -> None:
                 if game.status == GameStatus.HEAD_START and game.head_start_ends_at:
                     ends_at = game.head_start_ends_at
                     if ends_at.tzinfo is None:
-                        ends_at = ends_at.replace(tzinfo=timezone.utc)
+                        ends_at = ends_at.replace(tzinfo=UTC)
                     if now >= ends_at:
                         await _transition_to_active(session, game)
                         game.status = GameStatus.ACTIVE
@@ -136,7 +143,7 @@ async def _tick() -> None:
                 if game.status == GameStatus.ACTIVE and game.game_ends_at:
                     game_ends = game.game_ends_at
                     if game_ends.tzinfo is None:
-                        game_ends = game_ends.replace(tzinfo=timezone.utc)
+                        game_ends = game_ends.replace(tzinfo=UTC)
                     if now >= game_ends:
                         await end_game(session, game)
                         _circles.pop(game.id, None)

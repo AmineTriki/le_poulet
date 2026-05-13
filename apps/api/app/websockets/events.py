@@ -1,4 +1,5 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal
+
 from pydantic import BaseModel
 
 
@@ -104,9 +105,19 @@ class BarMarkedEvent(BaseModel):
     found: bool
 
 
-GameEvent = Union[
-    GameStartedEvent, GameEndedEvent, PlayerJoinedEvent, PlayerLeftEvent,
-    LocationUpdateEvent, CircleShrinkEvent, ChickenAlertEvent, ChickenFoundEvent,
-    ChallengeNewEvent, ChallengeSubmittedEvent, ChallengeScoredEvent,
-    WeaponFiredEvent, WeaponHitEvent, BarMarkedEvent,
-]
+GameEvent = (
+    GameStartedEvent
+    | GameEndedEvent
+    | PlayerJoinedEvent
+    | PlayerLeftEvent
+    | LocationUpdateEvent
+    | CircleShrinkEvent
+    | ChickenAlertEvent
+    | ChickenFoundEvent
+    | ChallengeNewEvent
+    | ChallengeSubmittedEvent
+    | ChallengeScoredEvent
+    | WeaponFiredEvent
+    | WeaponHitEvent
+    | BarMarkedEvent
+)

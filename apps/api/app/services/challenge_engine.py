@@ -2,11 +2,12 @@ import json
 import random
 from pathlib import Path
 from typing import Any
-from sqlmodel.ext.asyncio.session import AsyncSession
+
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.models.challenge import Challenge, ChallengeSubmission, SubmissionStatus
 from app.models.team import Team
-
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 

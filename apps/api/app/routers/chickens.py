@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.database import get_session
 from app.models.chicken import Chicken
 
@@ -26,6 +27,7 @@ async def set_chicken_bar(
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     from app.models.player import Player
+
     player_result = await session.exec(select(Player).where(Player.token == player_token))
     player = player_result.first()
     if not player or player.game_id != game_id:

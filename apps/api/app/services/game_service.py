@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
-from typing import Optional
-from sqlmodel.ext.asyncio.session import AsyncSession
+
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.models.game import Game, GameStatus
 from app.models.player import Player, PlayerRole
-from app.models.team import Team
 from app.schemas.game import GameCreate
-from app.utils.codes import generate_game_code
-from app.services.team_builder import build_teams
 from app.services.chicken_picker import pick_chickens
+from app.services.team_builder import build_teams
+from app.utils.codes import generate_game_code
 
 
 async def create_game(session: AsyncSession, data: GameCreate, host_name: str) -> tuple[Game, Player]:
@@ -69,7 +69,7 @@ async def start_game(session: AsyncSession, game: Game) -> Game:
     return game
 
 
-async def get_game_by_code(session: AsyncSession, code: str) -> Optional[Game]:
+async def get_game_by_code(session: AsyncSession, code: str) -> Game | None:
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     return result.first()
 

@@ -1,11 +1,11 @@
-from datetime import datetime
-from enum import Enum
-from typing import Optional
-from sqlmodel import SQLModel, Field
 import uuid
+from datetime import datetime
+from enum import StrEnum
+
+from sqlmodel import Field, SQLModel
 
 
-class ChallengeCategory(str, Enum):
+class ChallengeCategory(StrEnum):
     SOCIAL = "social"
     PHYSICAL = "physical"
     BAR = "bar"
@@ -14,18 +14,18 @@ class ChallengeCategory(str, Enum):
     CITY = "city"
 
 
-class ChallengeDifficulty(str, Enum):
+class ChallengeDifficulty(StrEnum):
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     PHOTO = "photo"
     VIDEO = "video"
 
 
-class SubmissionStatus(str, Enum):
+class SubmissionStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -46,7 +46,7 @@ class Challenge(SQLModel, table=True):
     tags: str = Field(default="")
     min_players: int = Field(default=1, ge=1)
     time_limit_sec: int = Field(default=120, ge=30)
-    city: Optional[str] = Field(default=None)
+    city: str | None = Field(default=None)
     is_active: bool = Field(default=True)
 
 
@@ -58,9 +58,9 @@ class ChallengeSubmission(SQLModel, table=True):
     challenge_id: str = Field(foreign_key="challenges.id")
     team_id: str = Field(foreign_key="teams.id")
     player_id: str = Field(foreign_key="players.id")
-    media_url: Optional[str] = Field(default=None)
+    media_url: str | None = Field(default=None)
     status: SubmissionStatus = Field(default=SubmissionStatus.PENDING)
     points_awarded: int = Field(default=0)
-    chicken_score: Optional[int] = Field(default=None)
+    chicken_score: int | None = Field(default=None)
     submitted_at: datetime = Field(default_factory=datetime.utcnow)
-    scored_at: Optional[datetime] = Field(default=None)
+    scored_at: datetime | None = Field(default=None)

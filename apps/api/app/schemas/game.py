@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel
-from app.models.game import GameStatus, CostumePolicy
+
+from app.models.game import CostumePolicy, GameStatus
 
 
 class GameCreate(BaseModel):
@@ -20,7 +21,7 @@ class GameCreate(BaseModel):
     allow_texts: bool = True
     allow_hints: bool = False
     allow_social_media: bool = True
-    scheduled_at: Optional[datetime] = None
+    scheduled_at: datetime | None = None
 
 
 class GameRead(BaseModel):
@@ -37,11 +38,11 @@ class GameRead(BaseModel):
     chaos_mode: bool
     buy_in_amount: int
     costume_policy: CostumePolicy
-    bar_name: Optional[str]
-    bar_lat: Optional[float]
-    bar_lng: Optional[float]
-    head_start_ends_at: Optional[datetime]
-    game_ends_at: Optional[datetime]
+    bar_name: str | None
+    bar_lat: float | None
+    bar_lng: float | None
+    head_start_ends_at: datetime | None
+    game_ends_at: datetime | None
     created_at: datetime
     player_count: int = 0
     team_count: int = 0
@@ -49,15 +50,15 @@ class GameRead(BaseModel):
 
 class GameStartRequest(BaseModel):
     host_token: str
-    bar_id: Optional[str] = None
-    bar_name: Optional[str] = None
-    bar_lat: Optional[float] = None
-    bar_lng: Optional[float] = None
+    bar_id: str | None = None
+    bar_name: str | None = None
+    bar_lat: float | None = None
+    bar_lng: float | None = None
 
 
 class CircleState(BaseModel):
     center_lat: float
     center_lng: float
     radius_m: float
-    next_shrink_at: Optional[datetime]
+    next_shrink_at: datetime | None
     shrink_count: int

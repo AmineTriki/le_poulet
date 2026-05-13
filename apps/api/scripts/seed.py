@@ -2,6 +2,7 @@
 Seed the database with a test game, players, and all challenges.
 Run: uv run python -m scripts.seed
 """
+
 import asyncio
 import json
 from pathlib import Path
@@ -52,6 +53,7 @@ async def seed_test_game(session: AsyncSession) -> Game:
         await session.commit()
 
     from app.models.game import CostumePolicy
+
     game = Game(
         code="TEST01",
         name="Test Hunt (Seeded)",

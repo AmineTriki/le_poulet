@@ -1,11 +1,18 @@
 import random
 from dataclasses import dataclass, field
+
 from app.models.player import Player
-from app.models.team import Team, TEAM_NAMES_EN, TEAM_NAMES_FR
+from app.models.team import TEAM_NAMES_EN, TEAM_NAMES_FR, Team
 
 TEAM_COLORS = [
-    "#E63946", "#457B9D", "#2DC653", "#F5C518",
-    "#8338EC", "#FB5607", "#3A86FF", "#FF006E",
+    "#E63946",
+    "#457B9D",
+    "#2DC653",
+    "#F5C518",
+    "#8338EC",
+    "#FB5607",
+    "#3A86FF",
+    "#FF006E",
 ]
 
 
@@ -30,7 +37,7 @@ async def build_teams(players: list[Player], team_size: int, language: str) -> l
 
     drafts: list[TeamDraft] = []
     for idx, i in enumerate(range(0, len(players), team_size)):
-        chunk = players[i:i + team_size]
+        chunk = players[i : i + team_size]
         team = Team(
             game_id="",
             name=names[idx % len(names)],

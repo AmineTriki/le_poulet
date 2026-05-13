@@ -1,8 +1,8 @@
 import json
-import math
 import logging
+import math
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from redis.asyncio import Redis
@@ -95,7 +95,7 @@ async def search_bars(
     lat: float,
     lng: float,
     radius_m: int,
-    redis: Optional[Redis],
+    redis: Redis | None,
     city: str = "montreal",
 ) -> list[dict[str, Any]]:
     cache_key = f"bars:{lat:.3f}:{lng:.3f}:{radius_m}"
@@ -126,17 +126,19 @@ async def search_bars(
             name = tags.get("name")
             if not name:
                 continue
-            bars.append({
-                "id": f"osm:{element['id']}",
-                "name": name,
-                "lat": element.get("lat", lat),
-                "lng": element.get("lon", lng),
-                "address": tags.get("addr:street", ""),
-                "house_number": tags.get("addr:housenumber", ""),
-                "phone": tags.get("phone", ""),
-                "website": tags.get("website", ""),
-                "opening_hours": tags.get("opening_hours", ""),
-            })
+            bars.append(
+                {
+                    "id": f"osm:{element['id']}",
+                    "name": name,
+                    "lat": element.get("lat", lat),
+                    "lng": element.get("lon", lng),
+                    "address": tags.get("addr:street", ""),
+                    "house_number": tags.get("addr:housenumber", ""),
+                    "phone": tags.get("phone", ""),
+                    "website": tags.get("website", ""),
+                    "opening_hours": tags.get("opening_hours", ""),
+                }
+            )
 
         bars = bars[:25]
 

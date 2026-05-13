@@ -1,8 +1,8 @@
-from typing import Optional
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
+
 from app.redis import get_redis
-from app.services.bar_service import search_bars, get_bar_clusters
+from app.services.bar_service import get_bar_clusters, search_bars
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ async def search_bars_endpoint(
     lng: float,
     radius_m: int = 1500,
     city: str = "montreal",
-    redis: Optional[Redis] = Depends(get_redis),
+    redis: Redis | None = Depends(get_redis),
 ) -> list[dict]:
     """
     Search for bars near (lat, lng) within radius_m metres.

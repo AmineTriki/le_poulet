@@ -1,26 +1,27 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel
+
 from app.models.player import PlayerRole
 
 
 class PlayerCreate(BaseModel):
     game_id: str
     name: str
-    emoji: Optional[str] = None
+    emoji: str | None = None
 
 
 class PlayerRead(BaseModel):
     id: str
     game_id: str
-    team_id: Optional[str]
+    team_id: str | None
     name: str
     emoji: str
     role: PlayerRole
     is_online: bool
     score: int
-    last_lat: Optional[float]
-    last_lng: Optional[float]
+    last_lat: float | None
+    last_lng: float | None
     token: str
     created_at: datetime
 
@@ -30,5 +31,5 @@ class LocationUpdateRequest(BaseModel):
     lat: float
     lng: float
     accuracy_m: float = 0.0
-    heading: Optional[float] = None
-    speed_ms: Optional[float] = None
+    heading: float | None = None
+    speed_ms: float | None = None

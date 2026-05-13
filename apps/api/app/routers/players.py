@@ -1,12 +1,14 @@
+import random
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.database import get_session
 from app.models.game import Game
 from app.models.player import Player
 from app.schemas.player import PlayerCreate
 from app.websockets.manager import manager
-import random
 
 router = APIRouter()
 
@@ -27,22 +29,22 @@ async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_sess
     session.add(player)
     await session.commit()
     await session.refresh(player)
-    await manager.broadcast(player.game_id, {
-        "type": "player:joined",
-        "player_id": player.id,
-        "name": player.name,
-        "emoji": player.emoji,
-    })
+    await manager.broadcast(
+        player.game_id,
+        {
+            "type": "player:joined",
+            "player_id": player.id,
+            "name": player.name,
+            "emoji": player.emoji,
+        },
+    )
     return {"player_id": player.id, "token": player.token, "emoji": player.emoji}
 
 
 @router.get("/{game_id}/all", response_model=list[dict])
 async def list_players(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict]:
     result = await session.exec(select(Player).where(Player.game_id == game_id))
-    return [
-        {"id": p.id, "name": p.name, "emoji": p.emoji, "role": p.role, "score": p.score}
-        for p in result.all()
-    ]
+    return [{"id": p.id, "name": p.name, "emoji": p.emoji, "role": p.role, "score": p.score} for p in result.all()]
 
 
 @router.get("/me/{token}", response_model=dict)

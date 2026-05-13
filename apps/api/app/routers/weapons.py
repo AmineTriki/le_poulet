@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
-from app.database import get_session
-from app.models.weapon import WeaponType
-from app.models.team import Team
-from app.models.player import Player
-from app.services.power_up_engine import fire_weapon
 from pydantic import BaseModel
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.database import get_session
+from app.models.player import Player
+from app.models.team import Team
+from app.models.weapon import WeaponType
+from app.services.power_up_engine import fire_weapon
 
 router = APIRouter()
 
@@ -40,4 +41,5 @@ async def fire_weapon_endpoint(
 @router.get("/config")
 async def get_weapon_config() -> dict:
     from app.models.weapon import WEAPON_CONFIG
+
     return {k: v for k, v in WEAPON_CONFIG.items()}

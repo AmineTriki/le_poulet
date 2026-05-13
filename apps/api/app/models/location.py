@@ -1,7 +1,7 @@
-from datetime import datetime
-from typing import Optional
-from sqlmodel import SQLModel, Field
 import uuid
+from datetime import datetime
+
+from sqlmodel import Field, SQLModel
 
 
 class LocationUpdate(SQLModel, table=True):
@@ -13,6 +13,6 @@ class LocationUpdate(SQLModel, table=True):
     lat: float
     lng: float
     accuracy_m: float = Field(default=0.0)
-    heading: Optional[float] = Field(default=None)
-    speed_ms: Optional[float] = Field(default=None)
+    heading: float | None = Field(default=None)
+    speed_ms: float | None = Field(default=None)
     recorded_at: datetime = Field(default_factory=datetime.utcnow)

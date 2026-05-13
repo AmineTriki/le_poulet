@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.models.weapon import WeaponUse, WeaponType, WEAPON_CONFIG
+
 from app.models.team import Team
+from app.models.weapon import WEAPON_CONFIG, WeaponType, WeaponUse
 
 
 async def fire_weapon(

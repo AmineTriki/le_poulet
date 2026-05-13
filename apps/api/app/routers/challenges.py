@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
-from app.database import get_session
-from app.schemas.challenge import SubmissionCreate, ScoreSubmissionRequest
-from app.models.challenge import ChallengeSubmission
-from app.services.challenge_engine import get_random_challenge, score_submission
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.database import get_session
+from app.models.challenge import ChallengeSubmission
+from app.schemas.challenge import ScoreSubmissionRequest, SubmissionCreate
+from app.services.challenge_engine import get_random_challenge, score_submission
 
 router = APIRouter()
 
@@ -21,11 +22,15 @@ async def get_challenge(
         raise HTTPException(status_code=404, detail="No more challenges available")
     return {
         "id": challenge.id,
-        "title_en": challenge.title_en, "title_fr": challenge.title_fr,
-        "desc_en": challenge.desc_en, "desc_fr": challenge.desc_fr,
-        "points": challenge.points, "media_type": challenge.media_type,
+        "title_en": challenge.title_en,
+        "title_fr": challenge.title_fr,
+        "desc_en": challenge.desc_en,
+        "desc_fr": challenge.desc_fr,
+        "points": challenge.points,
+        "media_type": challenge.media_type,
         "time_limit_sec": challenge.time_limit_sec,
-        "category": challenge.category, "difficulty": challenge.difficulty,
+        "category": challenge.category,
+        "difficulty": challenge.difficulty,
         "min_players": challenge.min_players,
     }
 
@@ -33,6 +38,7 @@ async def get_challenge(
 @router.post("/submit")
 async def submit_challenge(data: SubmissionCreate, session: AsyncSession = Depends(get_session)) -> dict:
     from app.models.player import Player
+
     player_result = await session.exec(select(Player).where(Player.token == data.player_token))
     player = player_result.first()
     if not player:
@@ -69,6 +75,7 @@ async def list_pending_submissions(
     session: AsyncSession = Depends(get_session),
 ) -> list[dict]:
     from app.models.challenge import SubmissionStatus
+
     result = await session.exec(
         select(ChallengeSubmission).where(
             ChallengeSubmission.game_id == game_id,

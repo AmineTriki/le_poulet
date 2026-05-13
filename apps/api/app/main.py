@@ -1,15 +1,27 @@
 import asyncio
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import sentry_sdk
+
 from app.config import settings
 from app.database import init_db
 from app.redis import close_redis
-from app.routers import games, players, teams, chickens, challenges, locations, bars, weapons, costumes
-from app.websockets.handler import router as ws_router
+from app.routers import (
+    bars,
+    challenges,
+    chickens,
+    costumes,
+    games,
+    locations,
+    players,
+    teams,
+    weapons,
+)
 from app.services.scheduler import run_scheduler
+from app.websockets.handler import router as ws_router
 
 
 @asynccontextmanager

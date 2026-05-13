@@ -1,22 +1,23 @@
-from datetime import datetime
-from enum import Enum
-from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
 import uuid
+from datetime import datetime
+from enum import StrEnum
+from typing import TYPE_CHECKING
+
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.player import Player
     from app.models.team import Team
 
 
-class GameStatus(str, Enum):
+class GameStatus(StrEnum):
     LOBBY = "lobby"
     HEAD_START = "head_start"
     ACTIVE = "active"
     ENDED = "ended"
 
 
-class CostumePolicy(str, Enum):
+class CostumePolicy(StrEnum):
     REQUIRED = "required"
     ENCOURAGED = "encouraged"
     OPTIONAL = "optional"
@@ -32,7 +33,7 @@ class Game(SQLModel, table=True):
     city: str = Field(max_length=50)
     language: str = Field(default="en", max_length=5)
     status: GameStatus = Field(default=GameStatus.LOBBY)
-    host_player_id: Optional[str] = Field(default=None)
+    host_player_id: str | None = Field(default=None)
 
     # Rules config
     num_chickens: int = Field(default=1, ge=1, le=4)
@@ -51,19 +52,19 @@ class Game(SQLModel, table=True):
     allow_social_media: bool = Field(default=True)
 
     # Bar selection
-    bar_id: Optional[str] = Field(default=None)
-    bar_name: Optional[str] = Field(default=None)
-    bar_lat: Optional[float] = Field(default=None)
-    bar_lng: Optional[float] = Field(default=None)
+    bar_id: str | None = Field(default=None)
+    bar_name: str | None = Field(default=None)
+    bar_lat: float | None = Field(default=None)
+    bar_lng: float | None = Field(default=None)
 
     # Timing
-    scheduled_at: Optional[datetime] = Field(default=None)
-    head_start_ends_at: Optional[datetime] = Field(default=None)
-    game_ends_at: Optional[datetime] = Field(default=None)
-    ended_at: Optional[datetime] = Field(default=None)
+    scheduled_at: datetime | None = Field(default=None)
+    head_start_ends_at: datetime | None = Field(default=None)
+    game_ends_at: datetime | None = Field(default=None)
+    ended_at: datetime | None = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    players: List["Player"] = Relationship(back_populates="game")
-    teams: List["Team"] = Relationship(back_populates="game")
+    players: list["Player"] = Relationship(back_populates="game")
+    teams: list["Team"] = Relationship(back_populates="game")
