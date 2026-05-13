@@ -21,7 +21,7 @@ export default function HomeScreen() {
 
       <View style={s.row}>
         {[
-          { l: "Cities", v: "5" },
+          { l: "City", v: "MTL" },
           { l: "Free", v: "100%" },
           { l: "Open Source", v: "✓" },
         ].map((x) => (
