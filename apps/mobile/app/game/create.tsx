@@ -19,8 +19,8 @@ const CITY_LABELS: Record<City, string> = {
   tunis: "Tunis",
 };
 
-const HEAD_START_OPTIONS = [15, 20, 30, 45, 60] as const;
-const DURATION_OPTIONS = [1, 1.5, 2, 3] as const;
+const HEAD_START_OPTIONS = [1, 5, 15, 30, 60] as const;
+const DURATION_OPTIONS = [0.5, 1, 1.5, 2, 3] as const;
 
 export default function CreateScreen() {
   const [name, setName] = useState("");
@@ -30,6 +30,13 @@ export default function CreateScreen() {
   const [headStart, setHeadStart] = useState<number>(30);
   const [duration, setDuration] = useState<number>(2);
   const [loading, setLoading] = useState(false);
+  const [testMode, setTestMode] = useState(false);
+
+  const applyTestMode = (on: boolean) => {
+    setTestMode(on);
+    if (on) { setHeadStart(1); setDuration(0.5); }
+    else { setHeadStart(30); setDuration(2); }
+  };
 
   const canCreate = hostName.trim().length >= 2;
 
@@ -126,11 +133,20 @@ export default function CreateScreen() {
           ))}
         </View>
 
+        <TouchableOpacity
+          style={[s.testBtn, testMode && s.testBtnOn]}
+          onPress={() => applyTestMode(!testMode)}
+        >
+          <Text style={[s.testTxt, testMode && s.testTxtOn]}>
+            {testMode ? "🧪 TEST MODE ON — tap to disable" : "🧪 TEST MODE  (1 min head start, 30 min game)"}
+          </Text>
+        </TouchableOpacity>
+
         <Text style={s.label}>HEAD START</Text>
         <View style={s.pills}>
           {HEAD_START_OPTIONS.map((m) => (
-            <TouchableOpacity key={m} onPress={() => setHeadStart(m)} style={[s.pill, headStart === m && s.pillOn]}>
-              <Text style={[s.pillTxt, headStart === m && s.pillTxtOn]}>{m}min</Text>
+            <TouchableOpacity key={m} onPress={() => { setHeadStart(m); setTestMode(false); }} style={[s.pill, headStart === m && s.pillOn]}>
+              <Text style={[s.pillTxt, headStart === m && s.pillTxtOn]}>{m === 1 ? "1min ⚡" : `${m}min`}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -138,8 +154,8 @@ export default function CreateScreen() {
         <Text style={s.label}>DURATION</Text>
         <View style={s.pills}>
           {DURATION_OPTIONS.map((h) => (
-            <TouchableOpacity key={h} onPress={() => setDuration(h)} style={[s.pill, duration === h && s.pillOn]}>
-              <Text style={[s.pillTxt, duration === h && s.pillTxtOn]}>{h}h</Text>
+            <TouchableOpacity key={h} onPress={() => { setDuration(h); setTestMode(false); }} style={[s.pill, duration === h && s.pillOn]}>
+              <Text style={[s.pillTxt, duration === h && s.pillTxtOn]}>{h === 0.5 ? "30min ⚡" : `${h}h`}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -177,4 +193,8 @@ const s = StyleSheet.create({
   btn: { backgroundColor: "#F5C518", padding: 18, alignItems: "center", marginTop: 8 },
   btnOff: { opacity: 0.4 },
   btnTxt: { fontSize: 20, fontWeight: "700", color: "#0A0805", letterSpacing: 2 },
+  testBtn: { borderWidth: 1, borderColor: "#3a3020", borderStyle: "dashed", padding: 12, alignItems: "center", marginBottom: 24 },
+  testBtnOn: { borderColor: "#F5C518", backgroundColor: "#F5C51822" },
+  testTxt: { color: "#4a3f2f", fontSize: 12, fontFamily: "monospace" },
+  testTxtOn: { color: "#F5C518" },
 });

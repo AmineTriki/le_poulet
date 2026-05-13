@@ -57,9 +57,19 @@ export default function CreatePage() {
   const [newPlayer, setNewPlayer] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [testMode, setTestMode] = useState(false);
 
   const update = <K extends keyof GameFormData>(key: K, value: GameFormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const applyTestMode = (on: boolean) => {
+    setTestMode(on);
+    if (on) {
+      setForm((prev) => ({ ...prev, headStartMinutes: 1, gameDurationHours: 0.5 }));
+    } else {
+      setForm((prev) => ({ ...prev, headStartMinutes: 30, gameDurationHours: 2 }));
+    }
+  };
 
   const addPlayer = () => {
     if (!newPlayer.trim()) return;
@@ -257,6 +267,17 @@ export default function CreatePage() {
           <div className="space-y-6">
             <h1 className="font-heading text-poulet-gold text-5xl uppercase">Rules</h1>
 
+            <button
+              onClick={() => applyTestMode(!testMode)}
+              className={`w-full border border-dashed px-4 py-3 font-mono text-sm transition-all ${
+                testMode
+                  ? "border-poulet-gold text-poulet-gold bg-poulet-gold/10"
+                  : "border-poulet-feather/30 text-poulet-feather/60 hover:border-poulet-feather/60"
+              }`}
+            >
+              🧪 {testMode ? "TEST MODE ON — 1 min head start, 30 min game. Click to disable." : "Enable Test Mode  (1 min head start · 30 min game · instant demo)"}
+            </button>
+
             <div>
               <label className="font-mono text-poulet-feather text-xs uppercase mb-2 block">
                 Number of Chickens
@@ -281,15 +302,15 @@ export default function CreatePage() {
               </label>
               <input
                 type="range"
-                min={10}
+                min={1}
                 max={60}
-                step={5}
+                step={1}
                 value={form.headStartMinutes}
-                onChange={(e) => update("headStartMinutes", Number(e.target.value))}
+                onChange={(e) => { update("headStartMinutes", Number(e.target.value)); setTestMode(false); }}
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
-                <span>10 min</span>
+                <span>1 min</span>
                 <span>60 min</span>
               </div>
             </div>
@@ -301,15 +322,15 @@ export default function CreatePage() {
               </label>
               <input
                 type="range"
-                min={1}
+                min={0.5}
                 max={4}
                 step={0.5}
                 value={form.gameDurationHours}
-                onChange={(e) => update("gameDurationHours", Number(e.target.value))}
+                onChange={(e) => { update("gameDurationHours", Number(e.target.value)); setTestMode(false); }}
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
-                <span>1 hr</span>
+                <span>30 min</span>
                 <span>4 hrs</span>
               </div>
             </div>
