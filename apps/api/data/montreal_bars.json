@@ -1,0 +1,147 @@
+{
+  "city": "montreal",
+  "generated": "2026-05-01",
+  "source": "OpenStreetMap / Overpass, curated",
+  "clusters": [
+    {
+      "id": "plateau-saint-laurent",
+      "name": "Plateau — Boulevard Saint-Laurent",
+      "name_fr": "Plateau — Boulevard Saint-Laurent",
+      "center_lat": 45.5185,
+      "center_lng": -73.5832,
+      "radius_m": 600,
+      "bars": [
+        {"id":"osm:mtl-001","name":"Dieu du Ciel","lat":45.5214,"lng":-73.5831,"address":"29 Avenue Laurier Ouest","opening_hours":"Mon-Fri 15:00-03:00; Sat-Sun 12:00-03:00"},
+        {"id":"osm:mtl-002","name":"Brasserie Harricana","lat":45.5219,"lng":-73.5844,"address":"83 Rue Saint-Zotique Est","opening_hours":"Tue-Sun 15:00-23:00"},
+        {"id":"osm:mtl-003","name":"Bily Kun","lat":45.5195,"lng":-73.5822,"address":"354 Avenue Mont-Royal Est","opening_hours":"Daily 16:00-03:00"},
+        {"id":"osm:mtl-004","name":"Le Lab Comptoir à Cocktails","lat":45.5183,"lng":-73.5799,"address":"1351 Rachel Est","opening_hours":"Mon-Sun 17:00-03:00"},
+        {"id":"osm:mtl-005","name":"Baldwin Barmacie","lat":45.5145,"lng":-73.5856,"address":"115 Avenue des Pins Ouest","opening_hours":"Daily 17:00-03:00"},
+        {"id":"osm:mtl-006","name":"Bar Waverly","lat":45.5266,"lng":-73.5985,"address":"5500 Boulevard Saint-Laurent","opening_hours":"Wed-Sun 18:00-03:00"},
+        {"id":"osm:mtl-007","name":"Casa del Popolo","lat":45.5255,"lng":-73.5966,"address":"4873 Boulevard Saint-Laurent","opening_hours":"Daily 16:00-03:00"},
+        {"id":"osm:mtl-008","name":"L'Île Noire Pub Écossais","lat":45.5172,"lng":-73.5813,"address":"342 Rue Ontario Est","opening_hours":"Daily 14:00-03:00"},
+        {"id":"osm:mtl-009","name":"Le Cagibi","lat":45.5251,"lng":-73.5952,"address":"5490 Boulevard Saint-Laurent","opening_hours":"Mon-Fri 8:00-23:00; Sat-Sun 9:00-23:00"},
+        {"id":"osm:mtl-010","name":"Alexandraplatz","lat":45.5231,"lng":-73.5902,"address":"4425 Boulevard Saint-Laurent","opening_hours":"Thu-Sun 22:00-03:00"},
+        {"id":"osm:mtl-011","name":"Bar Palco","lat":45.5168,"lng":-73.5808,"address":"272 Rue Ontario Est","opening_hours":"Daily 15:00-03:00"},
+        {"id":"osm:mtl-012","name":"Barfly","lat":45.5178,"lng":-73.5843,"address":"4062 Boulevard Saint-Laurent","opening_hours":"Daily 15:00-03:00"}
+      ]
+    },
+    {
+      "id": "downtown-crescent",
+      "name": "Downtown — Crescent & Bishop",
+      "name_fr": "Centre-ville — Crescent et Bishop",
+      "center_lat": 45.4978,
+      "center_lng": -73.5775,
+      "radius_m": 500,
+      "bars": [
+        {"id":"osm:mtl-020","name":"Sir Winston Churchill Pub","lat":45.4968,"lng":-73.5769,"address":"1459 Rue Crescent","opening_hours":"Daily 11:30-03:00"},
+        {"id":"osm:mtl-021","name":"Brutopia Brewery & Bar","lat":45.4975,"lng":-73.5771,"address":"1219 Rue Crescent","opening_hours":"Daily 15:00-03:00"},
+        {"id":"osm:mtl-022","name":"Hurley's Irish Pub","lat":45.4974,"lng":-73.5773,"address":"1225 Rue Crescent","opening_hours":"Daily 11:00-03:00"},
+        {"id":"osm:mtl-023","name":"Peel Pub","lat":45.4984,"lng":-73.5679,"address":"1107 Sainte-Catherine Ouest","opening_hours":"Daily 11:00-03:00"},
+        {"id":"osm:mtl-024","name":"Foufs","lat":45.5112,"lng":-73.5601,"address":"87 Rue Sainte-Catherine Est","opening_hours":"Thu-Sun 22:00-03:00"},
+        {"id":"osm:mtl-025","name":"Club Unity","lat":45.5155,"lng":-73.5617,"address":"1171 Sainte-Catherine Est","opening_hours":"Fri-Sun 22:00-03:00"},
+        {"id":"osm:mtl-026","name":"Bar Bishop","lat":45.4980,"lng":-73.5783,"address":"1329 Rue Bishop","opening_hours":"Daily 16:00-03:00"},
+        {"id":"osm:mtl-027","name":"Le Mal Nécessaire","lat":45.5123,"lng":-73.5566,"address":"1106 Boulevard Saint-Laurent","opening_hours":"Tue-Sun 17:00-03:00"},
+        {"id":"osm:mtl-028","name":"Cock n Bull","lat":45.4972,"lng":-73.5757,"address":"1944 Rue Sainte-Catherine Ouest","opening_hours":"Daily 11:00-03:00"},
+        {"id":"osm:mtl-029","name":"Pub Burgundy Lion","lat":45.4747,"lng":-73.5843,"address":"2496 Rue Notre-Dame Ouest","opening_hours":"Daily 11:30-03:00"}
+      ]
+    },
+    {
+      "id": "old-montreal",
+      "name": "Old Montréal — Old Port",
+      "name_fr": "Vieux-Montréal — Vieux-Port",
+      "center_lat": 45.5065,
+      "center_lng": -73.5540,
+      "radius_m": 500,
+      "bars": [
+        {"id":"osm:mtl-040","name":"Terrasse Place d'Armes","lat":45.5074,"lng":-73.5565,"address":"55 Rue Saint-Jacques","opening_hours":"Mon-Fri 11:00-23:00; Sat-Sun 10:00-23:00"},
+        {"id":"osm:mtl-041","name":"L'Original","lat":45.5069,"lng":-73.5542,"address":"479 Rue Saint-Alexis","opening_hours":"Tue-Sun 17:00-02:00"},
+        {"id":"osm:mtl-042","name":"Terrasse Nelligan","lat":45.5062,"lng":-73.5534,"address":"106 Rue Saint-Paul Ouest","opening_hours":"Daily 11:00-23:00"},
+        {"id":"osm:mtl-043","name":"Bar George","lat":45.5059,"lng":-73.5551,"address":"486 Rue McGill","opening_hours":"Mon-Fri 7:00-23:00; Sat-Sun 8:00-23:00"},
+        {"id":"osm:mtl-044","name":"Pub L'Île Noire","lat":45.5070,"lng":-73.5545,"address":"179 Rue Saint-Paul Est","opening_hours":"Daily 12:00-03:00"},
+        {"id":"osm:mtl-045","name":"Auberge du Vieux-Port","lat":45.5075,"lng":-73.5534,"address":"97 Rue de la Commune Est","opening_hours":"Daily 11:00-02:00"},
+        {"id":"osm:mtl-046","name":"Hôtel William Gray Rooftop","lat":45.5079,"lng":-73.5516,"address":"421 Rue Saint-Vincent","opening_hours":"Summer daily 15:00-23:00"},
+        {"id":"osm:mtl-047","name":"Le Serpent","lat":45.5083,"lng":-73.5541,"address":"257 Rue Prince","opening_hours":"Mon-Fri 11:30-23:00; Sat 17:00-23:00"}
+      ]
+    },
+    {
+      "id": "mile-end",
+      "name": "Mile End — Saint-Viateur & Bernard",
+      "name_fr": "Mile End — Saint-Viateur et Bernard",
+      "center_lat": 45.5250,
+      "center_lng": -73.5980,
+      "radius_m": 500,
+      "bars": [
+        {"id":"osm:mtl-060","name":"Bar Saint-Denis","lat":45.5245,"lng":-73.5847,"address":"4869 Rue Saint-Denis","opening_hours":"Daily 15:00-03:00"},
+        {"id":"osm:mtl-061","name":"Brasserie les Soeurs Grises","lat":45.5247,"lng":-73.5973,"address":"32 Rue Bernard Ouest","opening_hours":"Daily 15:00-01:00"},
+        {"id":"osm:mtl-062","name":"Bar Butcher","lat":45.5252,"lng":-73.5981,"address":"5765 Rue Saint-Laurent","opening_hours":"Tue-Sun 17:00-03:00"},
+        {"id":"osm:mtl-063","name":"Whisky Café","lat":45.5261,"lng":-73.5996,"address":"5800 Boulevard Saint-Laurent","opening_hours":"Mon-Sat 17:00-03:00"},
+        {"id":"osm:mtl-064","name":"Café Olimpico","lat":45.5259,"lng":-73.5990,"address":"124 Rue Saint-Viateur Ouest","opening_hours":"Daily 7:00-23:00"},
+        {"id":"osm:mtl-065","name":"Le Sainte-Élisabeth","lat":45.5140,"lng":-73.5675,"address":"1412 Rue Sainte-Élisabeth","opening_hours":"Daily 15:00-03:00"},
+        {"id":"osm:mtl-066","name":"Bar Notre-Dame des Quilles","lat":45.5249,"lng":-73.5980,"address":"32 Beaubien Est","opening_hours":"Tue-Sun 16:00-03:00"}
+      ]
+    },
+    {
+      "id": "gay-village",
+      "name": "Gay Village — Sainte-Catherine Est",
+      "name_fr": "Village — Sainte-Catherine Est",
+      "center_lat": 45.5155,
+      "center_lng": -73.5620,
+      "radius_m": 400,
+      "bars": [
+        {"id":"osm:mtl-070","name":"Sky Pub & Club","lat":45.5158,"lng":-73.5617,"address":"1474 Sainte-Catherine Est","opening_hours":"Daily 14:00-03:00"},
+        {"id":"osm:mtl-071","name":"Cabaret Mado","lat":45.5154,"lng":-73.5611,"address":"1115 Sainte-Catherine Est","opening_hours":"Wed-Sun 22:00-03:00"},
+        {"id":"osm:mtl-072","name":"Bar Le Stud","lat":45.5157,"lng":-73.5592,"address":"1812 Sainte-Catherine Est","opening_hours":"Daily 14:00-03:00"},
+        {"id":"osm:mtl-073","name":"Cabaret Les Deux Pierrots","lat":45.5162,"lng":-73.5636,"address":"104 Rue Saint-Paul Est","opening_hours":"Thu-Sat 21:00-03:00"},
+        {"id":"osm:mtl-074","name":"Le Bar L'Aigle Noir","lat":45.5153,"lng":-73.5609,"address":"1315 Sainte-Catherine Est","opening_hours":"Daily 13:00-03:00"},
+        {"id":"osm:mtl-075","name":"Cabaret Chéri(e)","lat":45.5160,"lng":-73.5630,"address":"68 Rue Sainte-Catherine Est","opening_hours":"Fri-Sat 22:00-03:00"}
+      ]
+    },
+    {
+      "id": "hochelaga",
+      "name": "Hochelaga — Ontario Est",
+      "name_fr": "Hochelaga-Maisonneuve — Ontario Est",
+      "center_lat": 45.5330,
+      "center_lng": -73.5320,
+      "radius_m": 600,
+      "bars": [
+        {"id":"osm:mtl-080","name":"Chez Tousignant","lat":45.5337,"lng":-73.5315,"address":"1291 Rue Beaubien Est","opening_hours":"Mon-Fri 15:00-03:00; Sat-Sun 12:00-03:00"},
+        {"id":"osm:mtl-081","name":"Bar L'Anti","lat":45.5332,"lng":-73.5328,"address":"4669 Rue Sainte-Catherine Est","opening_hours":"Daily 14:00-03:00"},
+        {"id":"osm:mtl-082","name":"La Tulipe","lat":45.5343,"lng":-73.5298,"address":"4530 Rue Papineau","opening_hours":"Show nights only"},
+        {"id":"osm:mtl-083","name":"Pub Le Cheval Blanc","lat":45.5175,"lng":-73.5551,"address":"809 Rue Ontario Est","opening_hours":"Mon-Fri 11:00-03:00; Sat-Sun 12:00-03:00"},
+        {"id":"osm:mtl-084","name":"Brasserie Dunham","lat":45.5168,"lng":-73.5547,"address":"3800 Rue Ontario Est","opening_hours":"Daily 12:00-23:00"},
+        {"id":"osm:mtl-085","name":"Bar Hex","lat":45.5325,"lng":-73.5338,"address":"4297 Rue Sainte-Catherine Est","opening_hours":"Wed-Sun 20:00-03:00"}
+      ]
+    },
+    {
+      "id": "saint-henri",
+      "name": "Saint-Henri — Notre-Dame Ouest",
+      "name_fr": "Saint-Henri — Notre-Dame Ouest",
+      "center_lat": 45.4740,
+      "center_lng": -73.5900,
+      "radius_m": 500,
+      "bars": [
+        {"id":"osm:mtl-090","name":"Pub Burgundy Lion","lat":45.4747,"lng":-73.5843,"address":"2496 Rue Notre-Dame Ouest","opening_hours":"Daily 11:30-03:00"},
+        {"id":"osm:mtl-091","name":"Bar Notre-Dame","lat":45.4750,"lng":-73.5882,"address":"2625 Rue Notre-Dame Ouest","opening_hours":"Daily 14:00-03:00"},
+        {"id":"osm:mtl-092","name":"Atwater Cocktail Club","lat":45.4773,"lng":-73.5884,"address":"512 Rue Atwater","opening_hours":"Mon-Sat 17:00-03:00"},
+        {"id":"osm:mtl-093","name":"Buvette Chez Simone","lat":45.4755,"lng":-73.5912,"address":"4869 Ave du Parc","opening_hours":"Daily 15:00-01:00"},
+        {"id":"osm:mtl-094","name":"Bar Le Chien Fumant","lat":45.4762,"lng":-73.5874,"address":"2518 Rue Notre-Dame Ouest","opening_hours":"Tue-Sun 17:00-01:00"}
+      ]
+    },
+    {
+      "id": "quartier-spectacles",
+      "name": "Quartier des Spectacles",
+      "name_fr": "Quartier des Spectacles",
+      "center_lat": 45.5100,
+      "center_lng": -73.5640,
+      "radius_m": 400,
+      "bars": [
+        {"id":"osm:mtl-100","name":"Foufs","lat":45.5112,"lng":-73.5601,"address":"87 Sainte-Catherine Est","opening_hours":"Thu-Sun 22:00-03:00"},
+        {"id":"osm:mtl-101","name":"Bar Le Ritz PDB","lat":45.5125,"lng":-73.5633,"address":"179 Jean-Talon Ouest","opening_hours":"Tue-Sun 20:00-03:00"},
+        {"id":"osm:mtl-102","name":"Société des Arts Technologiques","lat":45.5089,"lng":-73.5648,"address":"1201 Boulevard Saint-Laurent","opening_hours":"Fri-Sat 22:00-03:00"},
+        {"id":"osm:mtl-103","name":"Le Newspeak","lat":45.5115,"lng":-73.5637,"address":"100 Rue Sherbrooke Est","opening_hours":"Thu-Sun 21:00-03:00"},
+        {"id":"osm:mtl-104","name":"Benelux","lat":45.5097,"lng":-73.5631,"address":"245 Sherbrooke Ouest","opening_hours":"Daily 12:00-02:00"},
+        {"id":"osm:mtl-105","name":"Sainte-Élisabeth","lat":45.5140,"lng":-73.5675,"address":"1412 Rue Sainte-Élisabeth","opening_hours":"Daily 15:00-03:00"}
+      ]
+    }
+  ]
+}

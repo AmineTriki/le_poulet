@@ -1,94 +1,108 @@
 import { useEffect, useRef } from "react";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TASK_NAME = "le-poulet-bg-location";
+const SESSION_KEY = "lepoulet_session";
 
-// Define the background task once at module level
-TaskManager.defineTask(TASK_NAME, ({ data, error }) => {
-  if (error) {
-    console.error("[BG Location] Error:", error.message);
-    return;
-  }
+// Background task — runs in a separate JS context; reads token from AsyncStorage
+TaskManager.defineTask(TASK_NAME, async ({ data, error }) => {
+  if (error) return;
   const { locations } = data as { locations: Location.LocationObject[] };
   const loc = locations[0];
-  if (loc) {
-    // Background location received — persisted to AsyncStorage or sent via fetch
-    console.log(
-      "[BG Location]",
-      loc.coords.latitude.toFixed(5),
-      loc.coords.longitude.toFixed(5)
-    );
+  if (!loc) return;
+
+  try {
+    const raw = await AsyncStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const session = JSON.parse(raw) as { playerToken?: string };
+    if (!session.playerToken) return;
+
+    const API = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
+    await fetch(`${API}/api/v1/locations/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        player_token: session.playerToken,
+        lat: loc.coords.latitude,
+        lng: loc.coords.longitude,
+        accuracy_m: loc.coords.accuracy ?? 0,
+        heading: loc.coords.heading ?? null,
+        speed_ms: loc.coords.speed ?? null,
+      }),
+    });
+  } catch {
+    // Background fetch failures are silent — connectivity may be intermittent
   }
 });
 
 interface Opts {
-  gameCode: string | null;
   playerToken: string | null;
   enabled: boolean;
 }
 
-export function useBackgroundLocation({ gameCode, playerToken, enabled }: Opts) {
+export function useBackgroundLocation({ playerToken, enabled }: Opts) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!enabled || !gameCode || !playerToken) return;
+    if (!enabled || !playerToken) return;
+
+    const API = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
+
+    const post = async (loc: Location.LocationObject) => {
+      try {
+        await fetch(`${API}/api/v1/locations/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            player_token: playerToken,
+            lat: loc.coords.latitude,
+            lng: loc.coords.longitude,
+            accuracy_m: loc.coords.accuracy ?? 0,
+            heading: loc.coords.heading ?? null,
+            speed_ms: loc.coords.speed ?? null,
+          }),
+        });
+      } catch {
+        // Connectivity failures are silently dropped; next tick will retry
+      }
+    };
 
     const startTracking = async () => {
-      // Request foreground permission first
-      const { status: fgStatus } = await Location.requestForegroundPermissionsAsync();
-      if (fgStatus !== "granted") {
-        console.warn("[Location] Foreground permission denied");
-        return;
-      }
+      const { status: fg } = await Location.requestForegroundPermissionsAsync();
+      if (fg !== "granted") return;
 
-      // Request background permission
-      const { status: bgStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (bgStatus !== "granted") {
-        console.warn("[Location] Background permission denied — foreground only");
-      }
-
-      // Start background task if we have background permission
-      if (bgStatus === "granted") {
-        const alreadyRunning = await Location.hasStartedLocationUpdatesAsync(TASK_NAME).catch(() => false);
-        if (!alreadyRunning) {
-          await Location.startLocationUpdatesAsync(TASK_NAME, {
-            accuracy: Location.Accuracy.Balanced,
-            timeInterval: 5000,
-            distanceInterval: 10,
-            showsBackgroundLocationIndicator: true,
-            foregroundService: {
-              notificationTitle: "Le Poulet",
-              notificationBody: "Tracking your location for the hunt 🐔",
-              notificationColor: "#F5C518",
-            },
-          });
-        }
-      }
-
-      // Foreground polling interval — sends location to API
+      // Foreground polling every 5 s
       intervalRef.current = setInterval(async () => {
         try {
           const loc = await Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.Balanced,
           });
-          const API = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
-          await fetch(`${API}/api/v1/locations/update`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              player_token: playerToken,
-              lat: loc.coords.latitude,
-              lng: loc.coords.longitude,
-              accuracy_m: loc.coords.accuracy ?? 0,
-              heading: loc.coords.heading ?? null,
-              speed_ms: loc.coords.speed ?? null,
-            }),
-          });
-        } catch (e) {
-          console.warn("[Location] Failed to send update:", e);
+          await post(loc);
+        } catch {
+          // GPS unavailable (simulator / no signal) — skip tick
         }
-      }, 5000);
+      }, 5_000);
+
+      // Background task (physical device only)
+      const { status: bg } = await Location.requestBackgroundPermissionsAsync();
+      if (bg !== "granted") return;
+
+      const running = await Location.hasStartedLocationUpdatesAsync(TASK_NAME).catch(() => false);
+      if (!running) {
+        await Location.startLocationUpdatesAsync(TASK_NAME, {
+          accuracy: Location.Accuracy.Balanced,
+          timeInterval: 5_000,
+          distanceInterval: 10,
+          showsBackgroundLocationIndicator: true,
+          foregroundService: {
+            notificationTitle: "Le Poulet",
+            notificationBody: "Tracking your location for the hunt 🐔",
+            notificationColor: "#F5C518",
+          },
+        });
+      }
     };
 
     void startTracking();
@@ -100,5 +114,5 @@ export function useBackgroundLocation({ gameCode, playerToken, enabled }: Opts) 
       }
       Location.stopLocationUpdatesAsync(TASK_NAME).catch(() => {});
     };
-  }, [enabled, gameCode, playerToken]);
+  }, [enabled, playerToken]);
 }
