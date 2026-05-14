@@ -1,4 +1,3 @@
-import type { Challenge, ChallengeSubmission } from "./challenge";
 import type { GameConfig } from "./game";
 
 export interface TeamScore {

@@ -1,9 +1,10 @@
+import type { Language } from "../types/game";
 import { en } from "./en";
 import { fr } from "./fr";
 export type { I18nEn } from "./en";
 export type { I18nFr } from "./fr";
 export { en, fr };
-export type Language = "en" | "fr";
+export type { Language };
 
 const translations = { en, fr } as const;
 

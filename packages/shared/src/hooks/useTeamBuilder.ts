@@ -18,7 +18,7 @@ export function useTeamBuilder(players: Player[], teamSize: number) {
     setPhase("chicken");
     const idx = Math.floor(Math.random() * players.length);
     setTimeout(() => {
-      setChicken(players[idx]);
+      setChicken(players[idx] ?? null);
       setPhase("teams");
     }, 3000);
   }, [players]);

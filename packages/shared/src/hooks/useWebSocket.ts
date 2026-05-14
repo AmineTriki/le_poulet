@@ -23,7 +23,7 @@ export function useWebSocket(gameId: string | null, playerId: string | null, bas
       try {
         const event = JSON.parse(e.data as string) as GameEvent;
         listeners.current.forEach((cb) => cb(event));
-      } catch {}
+      } catch (_) { /* ignore parse errors */ }
     };
   }, [gameId, playerId, baseUrl]);
 

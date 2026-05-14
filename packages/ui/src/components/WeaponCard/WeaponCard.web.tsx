@@ -12,7 +12,7 @@ interface WeaponCardProps {
   cooldownSeconds?: number;
 }
 
-export function WeaponCard({ weapon, cost, description, name, emoji, canAfford, onFire, cooldownSeconds }: WeaponCardProps) {
+export function WeaponCard({ weapon: _weapon, cost, description, name, emoji, canAfford, onFire, cooldownSeconds }: WeaponCardProps) {
   const onCooldown = (cooldownSeconds ?? 0) > 0;
   return (
     <div className="border border-poulet-feather/30 bg-poulet-black p-4 space-y-2">

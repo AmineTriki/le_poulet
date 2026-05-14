@@ -1,5 +1,4 @@
 import React from "react";
-import { colors } from "../../tokens/colors";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
