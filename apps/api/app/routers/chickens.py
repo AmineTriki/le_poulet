@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -9,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/{game_id}/active")
-async def get_active_chickens(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict]:
+async def get_active_chickens(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict[str, Any]]:
     result = await session.exec(
         select(Chicken).where(Chicken.game_id == game_id, Chicken.is_active == True)  # noqa: E712
     )
@@ -25,7 +27,7 @@ async def set_chicken_bar(
     bar_lat: float,
     bar_lng: float,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     from app.models.player import Player
 
     player_result = await session.exec(select(Player).where(Player.token == player_token))

@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -14,18 +16,18 @@ from app.websockets.manager import manager
 router = APIRouter()
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=dict[str, Any])
 async def create_new_game(
     data: GameCreate,
     host_name: str,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     game, host = await create_game(session, data, host_name)
     return {"game_code": game.code, "game_id": game.id, "host_token": host.token, "host_player_id": host.id}
 
 
-@router.get("/{code}", response_model=dict)
-async def get_game(code: str, session: AsyncSession = Depends(get_session)) -> dict:
+@router.get("/{code}", response_model=dict[str, Any])
+async def get_game(code: str, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
     if not game:
@@ -53,8 +55,8 @@ async def get_game(code: str, session: AsyncSession = Depends(get_session)) -> d
     }
 
 
-@router.get("/{code}/state", response_model=dict)
-async def get_game_state(code: str, session: AsyncSession = Depends(get_session)) -> dict:
+@router.get("/{code}/state", response_model=dict[str, Any])
+async def get_game_state(code: str, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
     """Full game state snapshot — safe to call on reconnect."""
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
@@ -125,7 +127,7 @@ async def start_existing_game(
     code: str,
     req: GameStartRequest,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
     if not game:
@@ -158,7 +160,7 @@ async def end_existing_game(
     code: str,
     host_token: str,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
     if not game:

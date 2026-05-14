@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
@@ -16,7 +17,7 @@ EMOJIS = ["🦊", "🐺", "🦁", "🐯", "🐻", "🦅", "🐉", "🦄", "🐸"
 
 
 @router.post("/", response_model=dict)
-async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_session)) -> dict:
+async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
     game_result = await session.exec(select(Game).where(Game.id == data.game_id))
     game = game_result.first()
     if not game:
@@ -41,14 +42,14 @@ async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_sess
     return {"player_id": player.id, "token": player.token, "emoji": player.emoji}
 
 
-@router.get("/{game_id}/all", response_model=list[dict])
-async def list_players(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict]:
+@router.get("/{game_id}/all", response_model=list[dict[str, Any]])
+async def list_players(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict[str, Any]]:
     result = await session.exec(select(Player).where(Player.game_id == game_id))
     return [{"id": p.id, "name": p.name, "emoji": p.emoji, "role": p.role, "score": p.score} for p in result.all()]
 
 
 @router.get("/me/{token}", response_model=dict)
-async def get_player_by_token(token: str, session: AsyncSession = Depends(get_session)) -> dict:
+async def get_player_by_token(token: str, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
     result = await session.exec(select(Player).where(Player.token == token))
     player = result.first()
     if not player:
