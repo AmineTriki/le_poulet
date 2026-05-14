@@ -30,9 +30,12 @@ dev-dependencies = [
 ]
 
 [tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "UP"]
+line-length = 120
 target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
 
 [tool.mypy]
 strict = true

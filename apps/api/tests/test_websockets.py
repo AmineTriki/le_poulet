@@ -1,4 +1,5 @@
 import pytest
+
 from app.websockets.manager import ConnectionManager
 
 

@@ -1,18 +1,20 @@
 import asyncio
 from logging.config import fileConfig
+
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
 from sqlmodel import SQLModel
-from app.config import settings
+
+import app.models.challenge  # noqa
+import app.models.chicken  # noqa
 import app.models.game  # noqa
+import app.models.location  # noqa
 import app.models.player  # noqa
 import app.models.team  # noqa
-import app.models.chicken  # noqa
-import app.models.challenge  # noqa
-import app.models.location  # noqa
 import app.models.weapon  # noqa
+from app.config import settings
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url.replace("+asyncpg", ""))

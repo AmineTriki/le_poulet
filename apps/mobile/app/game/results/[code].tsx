@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
+import { clearSession } from "@/hooks/useSession";
 
 interface Team {
   id: string;
@@ -59,7 +60,7 @@ export default function ResultsScreen() {
         contentContainerStyle={s.list}
       />
 
-      <TouchableOpacity style={s.home} onPress={() => router.replace("/")}>
+      <TouchableOpacity style={s.home} onPress={async () => { await clearSession(); router.replace("/"); }}>
         <Text style={s.homeTxt}>PLAY AGAIN →</Text>
       </TouchableOpacity>
     </View>

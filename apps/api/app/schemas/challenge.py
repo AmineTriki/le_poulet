@@ -1,7 +1,13 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel
-from app.models.challenge import ChallengeCategory, ChallengeDifficulty, MediaType, SubmissionStatus
+
+from app.models.challenge import (
+    ChallengeCategory,
+    ChallengeDifficulty,
+    MediaType,
+    SubmissionStatus,
+)
 
 
 class ChallengeRead(BaseModel):
@@ -24,7 +30,7 @@ class SubmissionCreate(BaseModel):
     challenge_id: str
     team_id: str
     player_token: str
-    media_url: Optional[str] = None
+    media_url: str | None = None
 
 
 class SubmissionRead(BaseModel):
@@ -33,10 +39,10 @@ class SubmissionRead(BaseModel):
     challenge_id: str
     team_id: str
     player_id: str
-    media_url: Optional[str]
+    media_url: str | None
     status: SubmissionStatus
     points_awarded: int
-    chicken_score: Optional[int]
+    chicken_score: int | None
     submitted_at: datetime
 
 

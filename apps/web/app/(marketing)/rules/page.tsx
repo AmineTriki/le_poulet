@@ -19,7 +19,7 @@ export default function RulesPage() {
           {[
             {
               title: "The Chicken",
-              body: "One player volunteers (or is chosen by roulette) to be the Chicken. They get a 30-minute head start to pick any bar in the city, arrive there, and start the game. They carry the communal pot and cannot leave the bar once they&apos;ve chosen it.",
+              body: "One player volunteers (or is chosen by roulette) to be the Chicken. They get a 30-minute head start to pick any bar in the city, arrive there, and start the game. Players contribute real cash to the live pot — the Chicken keeps it all unless someone finds them. They cannot leave the bar once they&apos;ve chosen it.",
             },
             {
               title: "The Hunt",
@@ -35,7 +35,7 @@ export default function RulesPage() {
             },
             {
               title: "Scoring",
-              body: "1st to find: +100pts. 2nd: +75pts. 3rd: +50pts. After that: 0 bonus. Challenge points are cumulative throughout the hunt. The team with the most total points wins the pot. Last team to find the Chicken buys everyone a round. Always.",
+              body: "1st to find: +100pts. 2nd: +75pts. 3rd: +50pts. After that: 0 bonus. Challenge points are cumulative throughout the hunt. The first team to find the Chicken wins the live cash pot. Last team to find the Chicken buys everyone a round. Always.",
             },
             {
               title: "The Chicken&apos;s View",
@@ -63,7 +63,7 @@ export default function RulesPage() {
             Ready to Play?
           </div>
           <p className="font-body text-poulet-feather italic mb-6">
-            No account needed. No app install. Just a 6-letter code.
+            Free to play. Works in any browser. Just a 6-letter code.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link

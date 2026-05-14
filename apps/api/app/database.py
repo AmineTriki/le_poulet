@@ -1,7 +1,9 @@
 from collections.abc import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.config import settings
 
 _is_sqlite = settings.database_url.startswith("sqlite")
@@ -9,11 +11,15 @@ _is_sqlite = settings.database_url.startswith("sqlite")
 engine = create_async_engine(
     settings.database_url,
     # SQLite doesn't support connection pool settings
-    **({} if _is_sqlite else {
-        "pool_size": settings.database_pool_min,
-        "max_overflow": settings.database_pool_max - settings.database_pool_min,
-        "pool_pre_ping": True,
-    }),
+    **(
+        {}
+        if _is_sqlite
+        else {
+            "pool_size": settings.database_pool_min,
+            "max_overflow": settings.database_pool_max - settings.database_pool_min,
+            "pool_pre_ping": True,
+        }
+    ),
     echo=settings.debug,
     connect_args={"check_same_thread": False} if _is_sqlite else {},
 )

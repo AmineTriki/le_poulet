@@ -1,4 +1,3 @@
-import pytest
 from app.services.circle_engine import initial_circle, shrink_circle
 
 

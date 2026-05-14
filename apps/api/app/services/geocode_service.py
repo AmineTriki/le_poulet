@@ -1,5 +1,7 @@
-import httpx
 from typing import Any
+
+import httpx
+
 from app.config import settings
 
 

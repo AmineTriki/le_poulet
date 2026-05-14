@@ -24,13 +24,12 @@ export function usePushNotifications(): PushNotificationState {
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
-    const registerForPushNotifications = async () => {
+    const register = async () => {
       if (!Device.isDevice) {
-        console.warn("[Notifications] Push notifications only work on physical devices");
+        // Simulator — push tokens are not available; skip silently
         return;
       }
 
-      // Android channel setup
       if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("le-poulet", {
           name: "Le Poulet",
@@ -40,43 +39,38 @@ export function usePushNotifications(): PushNotificationState {
         });
       }
 
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+      const { status: existing } = await Notifications.getPermissionsAsync();
+      const { status: final } =
+        existing === "granted"
+          ? { status: existing }
+          : await Notifications.requestPermissionsAsync();
 
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
+      if (final !== "granted") return;
 
-      if (finalStatus !== "granted") {
-        console.warn("[Notifications] Permission not granted");
-        return;
-      }
+      // projectId must match the EAS project UUID in app.json / eas.json.
+      // Falls back to the Expo slug if the env var is not set.
+      const projectId =
+        process.env.EXPO_PUBLIC_PROJECT_ID ?? "le-poulet";
 
       try {
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: "le-poulet",
-        });
+        const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
         setExpoPushToken(tokenData.data);
-      } catch (e) {
-        console.warn("[Notifications] Could not get push token:", e);
+      } catch {
+        // Non-fatal — game works without push notifications
       }
     };
 
-    void registerForPushNotifications();
+    void register();
 
-    // Listen for notifications while app is in foreground
-    notificationListener.current = Notifications.addNotificationReceivedListener((n) => {
-      setNotification(n);
-      console.log("[Notification] Received:", n.request.content.title);
-    });
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      (n) => setNotification(n),
+    );
 
-    // Listen for user tapping a notification
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      console.log("[Notification] Tapped:", data);
-      // Navigation would happen here based on data.screen
-    });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (_response) => {
+        // Deep-link handling can be added here when needed
+      },
+    );
 
     return () => {
       notificationListener.current?.remove();

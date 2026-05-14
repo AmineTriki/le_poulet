@@ -2,7 +2,6 @@ import math
 import random
 from dataclasses import dataclass
 
-
 INITIAL_RADIUS_M = 1000.0
 MIN_RADIUS_M = 75.0
 JITTER_FACTOR = 0.15
@@ -21,9 +20,7 @@ def shrink_circle(state: CircleState, bar_lat: float, bar_lng: float) -> CircleS
 
     jitter_m = new_radius * JITTER_FACTOR
     jitter_lat = (random.random() - 0.5) * 2 * jitter_m / 111_000
-    jitter_lng = (random.random() - 0.5) * 2 * jitter_m / (
-        111_000 * math.cos(math.radians(bar_lat))
-    )
+    jitter_lng = (random.random() - 0.5) * 2 * jitter_m / (111_000 * math.cos(math.radians(bar_lat)))
 
     alpha = 1 - (new_radius / INITIAL_RADIUS_M)
     new_lat = state.center_lat + (bar_lat - state.center_lat) * alpha + jitter_lat

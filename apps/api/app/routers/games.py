@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.database import get_session
-from app.schemas.game import GameCreate, GameStartRequest
-from app.services.game_service import create_game, start_game, end_game
-from app.services.scheduler import _circles  # noqa: PLC2701
 from app.models.game import Game
 from app.models.player import Player
 from app.models.team import Team
+from app.schemas.game import GameCreate, GameStartRequest
+from app.services.game_service import create_game, end_game, start_game
+from app.services.scheduler import _circles  # noqa: PLC2701
 from app.websockets.manager import manager
 
 router = APIRouter()
@@ -63,9 +64,15 @@ async def get_game_state(code: str, session: AsyncSession = Depends(get_session)
     players_result = await session.exec(select(Player).where(Player.game_id == game.id))
     players = [
         {
-            "id": p.id, "name": p.name, "emoji": p.emoji, "role": p.role,
-            "team_id": p.team_id, "score": p.score, "is_online": p.is_online,
-            "last_lat": p.last_lat, "last_lng": p.last_lng,
+            "id": p.id,
+            "name": p.name,
+            "emoji": p.emoji,
+            "role": p.role,
+            "team_id": p.team_id,
+            "score": p.score,
+            "is_online": p.is_online,
+            "last_lat": p.last_lat,
+            "last_lng": p.last_lng,
         }
         for p in players_result.all()
     ]
@@ -73,8 +80,12 @@ async def get_game_state(code: str, session: AsyncSession = Depends(get_session)
     teams_result = await session.exec(select(Team).where(Team.game_id == game.id))
     teams = [
         {
-            "id": t.id, "name": t.name, "color": t.color, "score": t.score,
-            "found_order": t.found_order, "chaos_points": t.chaos_points,
+            "id": t.id,
+            "name": t.name,
+            "color": t.color,
+            "score": t.score,
+            "found_order": t.found_order,
+            "chaos_points": t.chaos_points,
         }
         for t in teams_result.all()
     ]
@@ -103,7 +114,9 @@ async def get_game_state(code: str, session: AsyncSession = Depends(get_session)
             "center_lng": circle.center_lng,
             "radius_m": circle.radius_m,
             "shrink_count": circle.shrink_count,
-        } if circle else None,
+        }
+        if circle
+        else None,
     }
 
 

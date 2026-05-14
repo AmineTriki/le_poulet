@@ -1,11 +1,11 @@
-from datetime import datetime
-from enum import Enum
-from typing import Optional
-from sqlmodel import SQLModel, Field
 import uuid
+from datetime import datetime
+from enum import StrEnum
+
+from sqlmodel import Field, SQLModel
 
 
-class WeaponType(str, Enum):
+class WeaponType(StrEnum):
     AIR_STRIKE = "air_strike"
     SPY = "spy"
     BOOBY_TRAP = "booby_trap"
@@ -30,9 +30,9 @@ class WeaponUse(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     game_id: str = Field(foreign_key="games.id", index=True)
     by_team_id: str = Field(foreign_key="teams.id")
-    target_team_id: Optional[str] = Field(default=None, foreign_key="teams.id")
+    target_team_id: str | None = Field(default=None, foreign_key="teams.id")
     weapon_type: WeaponType
     points_spent: int
     effect_data: str = Field(default="{}")
-    expires_at: Optional[datetime] = Field(default=None)
+    expires_at: datetime | None = Field(default=None)
     fired_at: datetime = Field(default_factory=datetime.utcnow)

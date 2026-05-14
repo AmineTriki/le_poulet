@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from app.database import get_session
-from app.schemas.player import LocationUpdateRequest
-from app.models.player import Player
-from app.models.location import LocationUpdate
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.config import settings
+from app.database import get_session
+from app.models.location import LocationUpdate
+from app.models.player import Player
+from app.schemas.player import LocationUpdateRequest
 from app.websockets.manager import manager
 
 router = APIRouter()
@@ -43,12 +45,15 @@ async def update_location(
     session.add(loc)
     await session.commit()
 
-    await manager.broadcast(player.game_id, {
-        "type": "location:update",
-        "player_id": player.id,
-        "lat": data.lat,
-        "lng": data.lng,
-        "ts": int(datetime.utcnow().timestamp() * 1000),
-    })
+    await manager.broadcast(
+        player.game_id,
+        {
+            "type": "location:update",
+            "player_id": player.id,
+            "lat": data.lat,
+            "lng": data.lng,
+            "ts": int(datetime.utcnow().timestamp() * 1000),
+        },
+    )
 
     return {"status": "ok"}
