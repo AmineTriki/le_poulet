@@ -16,11 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        run: |
-          python3 --version
-          pip --version
-          pip install uv --quiet
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
 
       - name: Install dependencies
         run: uv sync --dev --frozen
@@ -47,11 +46,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node + pnpm
-        run: |
-          node --version
-          npm --version
-          npm install -g pnpm@9 --quiet
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -68,11 +70,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node + pnpm
-        run: |
-          node --version
-          npm --version
-          npm install -g pnpm@9 --quiet
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
