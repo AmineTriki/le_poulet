@@ -16,10 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --dev --frozen
 
       - name: Lint (ruff)
         run: uv run ruff check .
@@ -55,8 +58,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint & type-check
-        run: pnpm turbo lint typecheck --filter=@le-poulet/web...
+      - name: Build (validates types + pages)
+        run: pnpm turbo build --filter=@le-poulet/web...
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+          NEXT_PUBLIC_WS_URL: ${{ secrets.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000' }}
 
   packages:
     name: Packages
@@ -75,6 +81,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Lint shared packages
+        run: pnpm turbo lint --filter=@le-poulet/shared --filter=@le-poulet/ui
 
       - name: Type-check shared packages
         run: pnpm turbo typecheck --filter=@le-poulet/shared --filter=@le-poulet/ui

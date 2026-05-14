@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from typing import Any
 
 from fastapi import WebSocket
 
@@ -19,7 +20,7 @@ class ConnectionManager:
             self._connections[game_id].remove(ws)
         self._player_sockets.pop(player_id, None)
 
-    async def broadcast(self, game_id: str, event: dict) -> None:
+    async def broadcast(self, game_id: str, event: dict[str, Any]) -> None:
         dead: list[WebSocket] = []
         for ws in self._connections[game_id]:
             try:
@@ -30,7 +31,7 @@ class ConnectionManager:
             if ws in self._connections[game_id]:
                 self._connections[game_id].remove(ws)
 
-    async def send_to_player(self, player_id: str, event: dict) -> None:
+    async def send_to_player(self, player_id: str, event: dict[str, Any]) -> None:
         ws = self._player_sockets.get(player_id)
         if ws:
             try:

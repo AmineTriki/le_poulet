@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
 
@@ -14,7 +16,7 @@ async def search_bars_endpoint(
     radius_m: int = 1500,
     city: str = "montreal",
     redis: Redis | None = Depends(get_redis),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """
     Search for bars near (lat, lng) within radius_m metres.
     Tries Overpass API first; falls back to pre-seeded local data on failure.
@@ -24,7 +26,7 @@ async def search_bars_endpoint(
 
 
 @router.get("/zones/{city}")
-async def get_bar_zones(city: str) -> list[dict]:
+async def get_bar_zones(city: str) -> list[dict[str, Any]]:
     """
     Return neighbourhood clusters with high bar density for the given city.
     Used by clients to suggest good hide zones to the Chicken without doing

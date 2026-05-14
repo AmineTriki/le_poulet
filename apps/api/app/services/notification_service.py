@@ -1,3 +1,5 @@
+from typing import Any
+
 import httpx
 
 from app.config import settings
@@ -7,7 +9,7 @@ async def send_push_notification(
     expo_push_token: str,
     title: str,
     body: str,
-    data: dict | None = None,
+    data: dict[str, Any] | None = None,
 ) -> bool:
     if not settings.expo_access_token:
         return False

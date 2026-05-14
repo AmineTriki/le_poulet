@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -9,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/{game_id}/all")
-async def list_teams(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict]:
+async def list_teams(game_id: str, session: AsyncSession = Depends(get_session)) -> list[dict[str, Any]]:
     result = await session.exec(select(Team).where(Team.game_id == game_id))
     return [
         {

@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -16,7 +18,7 @@ async def get_challenge(
     team_id: str,
     city: str = "montreal",
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     challenge = await get_random_challenge(session, game_id, team_id, city)
     if not challenge:
         raise HTTPException(status_code=404, detail="No more challenges available")
@@ -36,7 +38,7 @@ async def get_challenge(
 
 
 @router.post("/submit")
-async def submit_challenge(data: SubmissionCreate, session: AsyncSession = Depends(get_session)) -> dict:
+async def submit_challenge(data: SubmissionCreate, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
     from app.models.player import Player
 
     player_result = await session.exec(select(Player).where(Player.token == data.player_token))
@@ -62,7 +64,7 @@ async def score_challenge(
     submission_id: str,
     req: ScoreSubmissionRequest,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     submission = await score_submission(session, submission_id, req.score, req.approved)
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
@@ -73,7 +75,7 @@ async def score_challenge(
 async def list_pending_submissions(
     game_id: str,
     session: AsyncSession = Depends(get_session),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     from app.models.challenge import SubmissionStatus
 
     result = await session.exec(

@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 from sqlmodel import Field, SQLModel
 
@@ -14,7 +15,7 @@ class WeaponType(StrEnum):
     SILENCE = "silence"
 
 
-WEAPON_CONFIG: dict[str, dict] = {
+WEAPON_CONFIG: dict[str, dict[str, Any]] = {
     WeaponType.AIR_STRIKE: {"cost": 80, "cooldown_minutes": 20, "once_per_game": False},
     WeaponType.SPY: {"cost": 60, "cooldown_minutes": 15, "once_per_game": False},
     WeaponType.BOOBY_TRAP: {"cost": 50, "cooldown_minutes": 0, "once_per_game": True},

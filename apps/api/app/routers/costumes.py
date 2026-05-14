@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -62,5 +64,5 @@ COSTUME_PRODUCTS = [
 
 
 @router.get("/")
-async def list_costumes() -> list[dict]:
+async def list_costumes() -> list[dict[str, Any]]:
     return COSTUME_PRODUCTS

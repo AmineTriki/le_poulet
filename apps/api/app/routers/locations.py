@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
@@ -18,7 +19,7 @@ router = APIRouter()
 async def update_location(
     data: LocationUpdateRequest,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     player_result = await session.exec(select(Player).where(Player.token == data.player_token))
     player = player_result.first()
     if not player:

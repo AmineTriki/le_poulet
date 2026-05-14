@@ -14,7 +14,7 @@ async def get_redis() -> Redis | None:
     if _redis is None:
         try:
             client = from_url(settings.redis_url, encoding="utf-8", decode_responses=True)
-            await client.ping()
+            await client.ping()  # type: ignore[misc]
             _redis = client
         except Exception:
             logger.warning("Redis unavailable — bar caching disabled")

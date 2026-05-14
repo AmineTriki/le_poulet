@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import select
@@ -22,7 +24,7 @@ class WeaponFireRequest(BaseModel):
 async def fire_weapon_endpoint(
     req: WeaponFireRequest,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     player_result = await session.exec(select(Player).where(Player.token == req.player_token))
     player = player_result.first()
     if not player or not player.team_id:
@@ -39,7 +41,7 @@ async def fire_weapon_endpoint(
 
 
 @router.get("/config")
-async def get_weapon_config() -> dict:
+async def get_weapon_config() -> dict[str, Any]:
     from app.models.weapon import WEAPON_CONFIG
 
     return {k: v for k, v in WEAPON_CONFIG.items()}

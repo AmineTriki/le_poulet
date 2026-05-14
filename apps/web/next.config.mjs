@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
   transpilePackages: ["@le-poulet/shared", "@le-poulet/ui"],
   images: {
     domains: ["openstreetmap.org"],

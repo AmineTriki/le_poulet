@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { colors } from "../../tokens/colors";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";

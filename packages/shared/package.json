@@ -17,7 +17,9 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@le-poulet/config": "workspace:*"
+    "@le-poulet/config": "workspace:*",
+    "@types/node": "^25.7.0",
+    "@types/react": "^19.2.14",
+    "typescript": "^5.4.0"
   }
 }

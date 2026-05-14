@@ -15,6 +15,9 @@
   "peerDependenciesOptional": {
     "react-native": true
   },
+  "dependencies": {
+    "@le-poulet/shared": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.4.0",
     "@types/react": "^18.3.0",
