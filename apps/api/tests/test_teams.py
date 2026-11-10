@@ -53,3 +53,12 @@ async def test_build_teams_colors_assigned():
     for team in teams:
         assert team.color.startswith("#")
         assert len(team.color) == 7
+
+
+@pytest.mark.asyncio
+async def test_build_teams_names_unique_beyond_name_list():
+    players = [Player(game_id="g1", name=f"P{i}", emoji="x") for i in range(40)]
+    teams = await build_teams(players, 2, "en")
+    assert len(teams) == 20
+    assert len({t.name for t in teams}) == 20
+    assert sorted(len(t.players) for t in teams) == [2] * 20
