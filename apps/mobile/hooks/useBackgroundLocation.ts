@@ -69,9 +69,13 @@ export function useBackgroundLocation({ playerToken, enabled }: Opts) {
       }
     };
 
+    // Set on cleanup so an in-flight permission prompt can't start an interval
+    // (or background updates) after the effect has been torn down.
+    let cancelled = false;
+
     const startTracking = async () => {
       const { status: fg } = await Location.requestForegroundPermissionsAsync();
-      if (fg !== "granted") return;
+      if (fg !== "granted" || cancelled) return;
 
       // Foreground polling every 5 s
       intervalRef.current = setInterval(async () => {
@@ -87,7 +91,7 @@ export function useBackgroundLocation({ playerToken, enabled }: Opts) {
 
       // Background task (physical device only)
       const { status: bg } = await Location.requestBackgroundPermissionsAsync();
-      if (bg !== "granted") return;
+      if (bg !== "granted" || cancelled) return;
 
       const running = await Location.hasStartedLocationUpdatesAsync(TASK_NAME).catch(() => false);
       if (!running) {
@@ -108,6 +112,7 @@ export function useBackgroundLocation({ playerToken, enabled }: Opts) {
     void startTracking();
 
     return () => {
+      cancelled = true;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
