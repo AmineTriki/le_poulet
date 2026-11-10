@@ -9,21 +9,22 @@ export default function ResultsPage() {
   const { code } = useParams<{ code: string }>();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     fetch(`${API}/api/v1/games/${code}`)
-      .then((r) => r.json() as Promise<{ id: string }>)
+      .then((r) => { if (!r.ok) throw new Error("game"); return r.json() as Promise<{ id: string }>; })
       .then((g) => fetch(`${API}/api/v1/teams/${g.id}/all`))
-      .then((r) => r.json() as Promise<Team[]>)
+      .then((r) => { if (!r.ok) throw new Error("teams"); return r.json() as Promise<Team[]>; })
       .then((t) => { setTeams([...t].sort((a, b) => b.score - a.score)); setLoading(false); })
-      .catch(() => setLoading(false));
+      .catch(() => { setFailed(true); setLoading(false); });
   }, [code]);
 
   const winner = teams[0];
 
   return (
-    <div className="min-h-dvh bg-poulet-black px-6 py-20">
+    <div className="min-h-dvh bg-poulet-black px-4 sm:px-6 py-20 pb-safe">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center">
           <div className="font-heading text-poulet-gold leading-none mb-4" style={{ fontSize: "clamp(4rem, 15vw, 8rem)" }}>
@@ -35,12 +36,12 @@ export default function ResultsPage() {
         {winner && !loading && (
           <div className="border-2 border-poulet-gold bg-poulet-gold/10 p-8 text-center shadow-gold">
             <div className="font-mono text-poulet-gold text-xs uppercase tracking-widest mb-2">Winner</div>
-            <div className="font-heading text-poulet-gold text-5xl uppercase mb-2">{winner.name}</div>
+            <div className="font-heading text-poulet-gold text-4xl sm:text-5xl uppercase mb-2 break-words">{winner.name}</div>
             <div className="font-mono text-poulet-cream text-3xl">{winner.score.toLocaleString()} pts</div>
           </div>
         )}
 
-        {loading && <div className="font-mono text-poulet-feather text-center animate-pulse">Loading scores...</div>}
+        {loading && <div role="status" className="font-mono text-poulet-feather text-center animate-pulse">Loading scores...</div>}
 
         <div className="space-y-2">
           {teams.map((team, i) => (
@@ -58,7 +59,13 @@ export default function ResultsPage() {
           ))}
         </div>
 
-        {teams.length === 0 && !loading && (
+        {failed && (
+          <div role="alert" className="border border-poulet-red/40 p-4 text-center font-mono text-poulet-red text-sm">
+            Couldn&apos;t load the scores. Check your connection and reload.
+          </div>
+        )}
+
+        {teams.length === 0 && !loading && !failed && (
           <div className="border border-poulet-feather/20 p-8 text-center font-body text-poulet-feather italic">
             No teams found for this game.
           </div>
@@ -68,7 +75,7 @@ export default function ResultsPage() {
           <Link href="/create" className="flex-1 bg-poulet-gold text-poulet-black font-heading text-xl py-4 text-center uppercase hover:brightness-110 transition-all">
             Play Again 🐔
           </Link>
-          <Link href="/" className="border border-poulet-feather/40 text-poulet-feather font-mono px-6 py-4 hover:border-poulet-gold hover:text-poulet-gold transition-all">
+          <Link href="/" className="border border-poulet-feather/40 text-poulet-feather font-mono px-6 py-4 min-h-11 hover:border-poulet-gold hover:text-poulet-gold transition-all">
             Home
           </Link>
         </div>
