@@ -65,9 +65,12 @@ export default function ChickenScreen() {
 
   // Fetch initial game state
   useEffect(() => {
-    if (!code) return;
+    if (!code || !session?.playerToken) return;
     const fetch_ = async () => {
-      const res = await fetch(`${API()}/api/v1/games/${code}/state`);
+      // player_token lets the API reveal the chicken's own bar and position.
+      const res = await fetch(
+        `${API()}/api/v1/games/${code}/state?player_token=${encodeURIComponent(session.playerToken)}`,
+      );
       if (!res.ok) return;
       const data = await res.json() as {
         game: GameInfo;
@@ -79,7 +82,7 @@ export default function ChickenScreen() {
       }
     };
     void fetch_();
-  }, [code]);
+  }, [code, session?.playerToken]);
 
   // Animate danger alert in/out
   const triggerDanger = useCallback((dist: number) => {

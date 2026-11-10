@@ -1,6 +1,6 @@
 # Le Poulet API Reference
 
-Base URL: `https://api.lepoulet.gg` (production) / `http://localhost:8000` (local)
+Base URL: `https://api-production-d7b26.up.railway.app` (production, see `apps/web/.env.production`) / `http://localhost:8000` (local)
 
 All endpoints return JSON. Errors follow `{ "detail": "message" }` format.
 
@@ -153,6 +153,12 @@ Response `200`:
   "ended_at": "2024-05-01 23:15:00"
 }
 ```
+
+---
+
+### GET /api/v1/games/{code}/state
+
+Full snapshot of a game: game fields, players (with last known position), teams (scores, chaos points, `found_order`), and the current zone circle (or `null` before it exists). Safe to call on reconnect.
 
 ---
 
@@ -344,7 +350,7 @@ On success, a `location:update` WebSocket event is broadcast to all players in t
 
 ### GET /api/v1/bars/search
 
-Search for bars near a coordinate using OpenStreetMap Overpass API. Results are cached in Redis for 1 hour.
+Search for bars near a coordinate using OpenStreetMap Overpass API. Results are cached in Redis (2 hours for live Overpass data, 30 minutes when the local fallback is used).
 
 ```http
 GET /api/v1/bars/search?lat=45.5231&lng=-73.5812&radius_m=1500
@@ -354,6 +360,7 @@ Query params:
 - `lat` (required) — latitude
 - `lng` (required) — longitude
 - `radius_m` (optional, default 1500) — search radius in metres
+- `city` (optional, default `montreal`) — city key used for the local fallback data
 
 Response `200`:
 ```json
@@ -372,7 +379,13 @@ Response `200`:
 ]
 ```
 
-Returns up to 20 results. Queries OSM `amenity=bar`, `amenity=pub`, `amenity=nightclub`.
+Returns up to 25 results. If Overpass fails, falls back to pre-seeded local data (currently Montreal only). Queries OSM `amenity=bar`, `amenity=pub`, `amenity=nightclub`.
+
+---
+
+### GET /api/v1/bars/zones/{city}
+
+Neighbourhood clusters with high bar density for a city key (for example `montreal`), used to suggest hide zones to the Chicken without a live search.
 
 ---
 
@@ -496,6 +509,26 @@ Response `200`:
 
 ---
 
+## Chickens
+
+### GET /api/v1/chickens/{game_id}/active
+
+List active Chickens: `[{ "id", "player_id", "bar_name" }]`.
+
+### POST /api/v1/chickens/{game_id}/bar
+
+Record the Chicken's chosen bar. All parameters are **query params**: `player_token`, `bar_id`, `bar_name`, `bar_lat`, `bar_lng`. Returns `{"status": "ok", "bar_name": "..."}`; `401` for an invalid token, `404` if the player has no Chicken record.
+
+---
+
+## Costumes
+
+### GET /api/v1/costumes/
+
+Static list of chicken costume products (affiliate links) with English and French names and descriptions.
+
+---
+
 ## Weapons
 
 ### POST /api/v1/weapons/fire
@@ -514,7 +547,7 @@ Content-Type: application/json
 ```
 
 Weapon types and costs:
-| Weapon | Cost | Effect |
+| Weapon | Cost | Intended effect |
 |--------|------|--------|
 | `spy` | 60 pts | See target team's location for 60 seconds |
 | `air_strike` | 80 pts | Block target team's GPS updates for 90 seconds |
@@ -522,6 +555,8 @@ Weapon types and costs:
 | `silence` | 70 pts | Prevent target team from submitting challenges for 2 min |
 | `booby_trap` | 50 pts | Next team to enter your zone loses 30 pts (one-time) |
 | `decoy` | 100 pts | Place a false location marker on the map (one-time) |
+
+> Current server behaviour: the endpoint checks the team has enough chaos points, deducts the cost and records a `weapon_uses` row. The effects in the table are the intended design; cooldowns and the `once_per_game` limit from `/weapons/config` are not yet enforced server-side, and no `weapon:fired` event is broadcast.
 
 Response `200`:
 ```json
@@ -580,11 +615,7 @@ The server sends JSON text frames. All events have a `type` field.
 {
   "type": "game:started",
   "game_id": "550e8400...",
-  "config": {
-    "head_start_minutes": 30,
-    "game_duration_hours": 2.0,
-    "gps_shrink_interval_minutes": 15
-  }
+  "status": "head_start"
 }
 ```
 
@@ -606,9 +637,24 @@ The server sends JSON text frames. All events have a `type` field.
   "lat": 45.5198,
   "lng": -73.5789,
   "radius_m": 360.0,
-  "next_shrink_at": 1714502700000
+  "next_shrink_at": 1714502700
 }
 ```
+
+`next_shrink_at` is a Unix timestamp in **seconds** (unlike `location:update.ts`, which is milliseconds).
+
+**`player:joined`** / **`player:left`**
+```json
+{ "type": "player:joined", "player_id": "a1b2c3d4...", "name": "Alice", "emoji": "🦊" }
+{ "type": "player:left", "player_id": "a1b2c3d4..." }
+```
+
+**`chicken:alert`** (sent only to the Chicken)
+```json
+{ "type": "chicken:alert", "distance_m": 142.5, "team_id": "d4e5f6a7..." }
+```
+
+> The next three event types are defined in `app/websockets/events.py` but are **not yet broadcast** by any router or service: `chicken:found`, `challenge:scored`, `weapon:fired`. Clients should not rely on them yet.
 
 **`chicken:found`**
 ```json
@@ -645,13 +691,14 @@ The server sends JSON text frames. All events have a `type` field.
 ```json
 {
   "type": "game:ended",
-  "game_id": "550e8400...",
-  "scoreboard": [
-    { "team_name": "Red Foxes", "score": 450, "found_order": 1 },
-    { "team_name": "Blue Wolves", "score": 300, "found_order": null }
-  ]
+  "game_id": "550e8400..."
 }
 ```
 
-The connection is kept alive with server-sent `{"type": "ping"}` messages every 30 seconds.
-Clients should reconnect with exponential backoff on disconnect.
+Fetch the final scoreboard with `GET /api/v1/games/{code}/state` or `GET /api/v1/teams/{game_id}/all`.
+
+#### Client → server
+
+Any text frame a client sends is rebroadcast to the whole game as `{"from": "<player_id>", "data": "<text>"}`.
+
+Clients should reconnect with exponential backoff on disconnect. The server does not currently send keep-alive pings.

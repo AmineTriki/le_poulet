@@ -50,20 +50,29 @@ function JoinForm() {
       </div>
       <div className="space-y-4">
         <input
-          className="w-full text-center bg-transparent border-2 border-poulet-gold text-poulet-gold font-mono text-4xl py-4 uppercase tracking-widest focus:outline-none transition-all"
+          className="w-full text-center bg-transparent border-2 border-poulet-gold text-poulet-gold font-mono text-3xl sm:text-4xl py-4 uppercase tracking-widest focus-visible:ring-2 focus-visible:ring-poulet-gold/60 focus:outline-none transition-all"
           placeholder="XXXXXX"
           maxLength={6}
+          aria-label="Game code"
+          autoCapitalize="characters"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
         />
         <input
-          className="w-full bg-transparent border border-poulet-feather/40 text-poulet-cream font-body px-4 py-3 focus:outline-none focus:border-poulet-gold transition-colors"
+          className="w-full bg-transparent border border-poulet-feather/40 text-poulet-cream font-body text-base px-4 py-3 focus:outline-none focus:border-poulet-gold transition-colors"
           placeholder="Your name"
+          aria-label="Your name"
+          autoComplete="nickname"
+          maxLength={30}
+          enterKeyHint="go"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void handleJoin()}
         />
-        {error && <div className="font-mono text-poulet-red text-sm text-center">{error}</div>}
+        {error && <div role="alert" className="font-mono text-poulet-red text-sm text-center">{error}</div>}
         <button
           onClick={() => void handleJoin()}
           disabled={loading || code.length !== 6 || !name.trim()}
@@ -78,7 +87,7 @@ function JoinForm() {
 
 export default function JoinPage() {
   return (
-    <div className="min-h-screen bg-poulet-black flex items-center justify-center px-6">
+    <div className="min-h-dvh bg-poulet-black flex items-center justify-center px-4 sm:px-6 pt-safe pb-safe">
       <Suspense fallback={
         <div className="font-mono text-poulet-feather text-sm">Loading…</div>
       }>

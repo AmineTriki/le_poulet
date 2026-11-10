@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function RulesPage() {
   return (
-    <main className="bg-poulet-black min-h-screen pt-20 px-6 pb-24">
+    <main className="bg-poulet-black min-h-dvh pt-20 px-6 pb-24">
       <div className="max-w-3xl mx-auto">
         <Link
           href="/"

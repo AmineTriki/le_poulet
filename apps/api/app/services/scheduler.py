@@ -72,7 +72,8 @@ async def _maybe_shrink_circle(session: AsyncSession, game: Game) -> None:
         state = shrink_circle(state, game.bar_lat, game.bar_lng)
         _circles[game.id] = state
 
-        next_shrink_ts = int(reference.timestamp() + (state.shrink_count) * interval_sec)
+        # Shrink N happens at reference + N * interval, so the next one is N + 1.
+        next_shrink_ts = int(reference.timestamp() + (state.shrink_count + 1) * interval_sec)
 
         await manager.broadcast(
             game.id,
@@ -158,6 +159,7 @@ async def _tick() -> None:
 
             except Exception:
                 logger.exception("Scheduler error for game %s", game.id)
+                await session.rollback()
 
 
 async def run_scheduler() -> None:

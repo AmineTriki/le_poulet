@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.challenge import (
     ChallengeCategory,
@@ -30,7 +30,7 @@ class SubmissionCreate(BaseModel):
     challenge_id: str
     team_id: str
     player_token: str
-    media_url: str | None = None
+    media_url: str | None = Field(default=None, max_length=2048)
 
 
 class SubmissionRead(BaseModel):
@@ -48,5 +48,5 @@ class SubmissionRead(BaseModel):
 
 class ScoreSubmissionRequest(BaseModel):
     chicken_token: str
-    score: int
+    score: int = Field(ge=0, le=100)  # percentage of the challenge's points
     approved: bool = True

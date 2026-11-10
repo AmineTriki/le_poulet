@@ -12,16 +12,18 @@ export function useShrinkingCircle(
   useEffect(() => {
     return subscribe((event) => {
       if (event.type === "circle:shrink") {
-        setCircle({
+        // Functional update: avoids a stale `circle` closure and keeps the
+        // subscription stable (no unsubscribe/resubscribe on every shrink).
+        setCircle((prev) => ({
           centerLat: event.lat,
           centerLng: event.lng,
           radiusM: event.radiusM,
           nextShrinkAt: new Date(event.nextShrinkAt * 1000).toISOString(),
-          shrinkCount: (circle?.shrinkCount ?? 0) + 1,
-        });
+          shrinkCount: (prev?.shrinkCount ?? 0) + 1,
+        }));
       }
     });
-  }, [subscribe, circle]);
+  }, [subscribe]);
 
   return circle;
 }

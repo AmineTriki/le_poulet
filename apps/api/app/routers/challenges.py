@@ -5,7 +5,8 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.database import get_session
-from app.models.challenge import ChallengeSubmission
+from app.models.challenge import Challenge, ChallengeSubmission, SubmissionStatus
+from app.models.player import Player, PlayerRole
 from app.schemas.challenge import ScoreSubmissionRequest, SubmissionCreate
 from app.services.challenge_engine import get_random_challenge, score_submission
 
@@ -39,12 +40,15 @@ async def get_challenge(
 
 @router.post("/submit")
 async def submit_challenge(data: SubmissionCreate, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
-    from app.models.player import Player
-
     player_result = await session.exec(select(Player).where(Player.token == data.player_token))
     player = player_result.first()
     if not player:
         raise HTTPException(status_code=401, detail="Invalid player token")
+    # Players may only submit for their own game and team.
+    if player.game_id != data.game_id or player.team_id is None or player.team_id != data.team_id:
+        raise HTTPException(status_code=403, detail="Not a member of this team")
+    if await session.get(Challenge, data.challenge_id) is None:
+        raise HTTPException(status_code=404, detail="Challenge not found")
 
     submission = ChallengeSubmission(
         game_id=data.game_id,
@@ -65,6 +69,18 @@ async def score_challenge(
     req: ScoreSubmissionRequest,
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
+    existing = await session.get(ChallengeSubmission, submission_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    # Only the chicken of the submission's game may judge it.
+    judge_result = await session.exec(select(Player).where(Player.token == req.chicken_token))
+    judge = judge_result.first()
+    if not judge or judge.game_id != existing.game_id or judge.role != PlayerRole.CHICKEN:
+        raise HTTPException(status_code=403, detail="Only the chicken can score submissions")
+    if existing.status != SubmissionStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Submission already scored")
+
     submission = await score_submission(session, submission_id, req.score, req.approved)
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
@@ -76,8 +92,6 @@ async def list_pending_submissions(
     game_id: str,
     session: AsyncSession = Depends(get_session),
 ) -> list[dict[str, Any]]:
-    from app.models.challenge import SubmissionStatus
-
     result = await session.exec(
         select(ChallengeSubmission).where(
             ChallengeSubmission.game_id == game_id,

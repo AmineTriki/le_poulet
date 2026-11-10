@@ -180,7 +180,7 @@ Once the city entry is in `cities.json`, test locally:
 make dev-api
 
 # Search with the city center
-curl "http://localhost:8000/api/v1/bars/search?lat=52.52&lng=13.405&radius_m=1500"
+curl "http://localhost:8000/api/v1/bars/search?lat=52.52&lng=13.405&radius_m=1500&city=berlin"
 ```
 
 Should return at least 5 bars.
@@ -197,15 +197,10 @@ Add the city to the city list:
 
 ```tsx
 // Find the cities array
-const CITIES = [
-  { id: "montreal", name: "Montréal", flag: "🇨🇦" },
-  { id: "paris", name: "Paris", flag: "🇫🇷" },
-  { id: "london", name: "London", flag: "🇬🇧" },
-  { id: "nyc", name: "New York", flag: "🇺🇸" },
-  { id: "tunis", name: "Tunis", flag: "🇹🇳" },
-  // Add your city here:
-  { id: "berlin", name: "Berlin", flag: "🇩🇪" },
-];
+const CITIES = ["Montreal", "Paris", "Tunis", "NYC", "London", "Other"];
+// Add your city before "Other". The page lower-cases the label to build the
+// city key sent to the API, so it must match your cities.json slug
+// (note: "NYC" -> "nyc"; a multi-word label would need slug handling).
 ```
 
 ### Mobile (Create Hunt screen)
@@ -224,14 +219,12 @@ Update `README.md` to add the city to the Cities section. Change the status from
 
 ---
 
-## Step 5 — Run the Migration
+## Step 5 — Seed the Challenges
 
 The `Challenge` table is seeded from JSON files, not migrations. To load the new challenges:
 
 ```bash
 cd apps/api
-uv run python -m scripts.seed --city berlin
-# or full reseed:
 uv run python -m scripts.seed
 ```
 

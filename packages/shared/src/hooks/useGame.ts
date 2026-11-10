@@ -11,12 +11,24 @@ export function useGame(code: string | null) {
 
   useEffect(() => {
     if (!code) return;
+    // Ignore responses that arrive after `code` changed or the component unmounted.
+    let cancelled = false;
     setLoading(true);
+    setError(null);
     apiClient
       .get<GameConfig>(API_ENDPOINTS.games.get(code))
-      .then(setGame)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Unknown error"))
-      .finally(() => setLoading(false));
+      .then((g) => {
+        if (!cancelled) setGame(g);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Unknown error");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [code]);
 
   return { game, loading, error };

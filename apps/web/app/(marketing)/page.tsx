@@ -54,7 +54,7 @@ export default function LandingPage() {
   const allTestimonialsFR = [...TESTIMONIALS_FR, ...TESTIMONIALS_FR];
 
   return (
-    <main className="bg-poulet-black min-h-screen">
+    <main className="bg-poulet-black min-h-dvh">
       {/* Floating feathers */}
       {[3, 6, 9, 13, 18].map((delay, i) => (
         <div
@@ -81,13 +81,13 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/join"
-              className="font-mono text-poulet-feather text-xs uppercase hover:text-poulet-gold transition-colors hidden md:block"
+              className="font-mono text-poulet-feather text-xs uppercase hover:text-poulet-gold transition-colors py-3"
             >
               Join
             </Link>
             <Link
               href="/create"
-              className="bg-poulet-gold text-poulet-black font-heading text-sm px-4 py-1.5 uppercase hover:brightness-110 transition-all"
+              className="bg-poulet-gold text-poulet-black font-heading text-sm px-4 py-3 uppercase hover:brightness-110 transition-all"
             >
               Play Now
             </Link>
@@ -96,7 +96,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
+      <section className="relative min-h-dvh flex items-center justify-center overflow-hidden pt-14">
         {/* Background radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"

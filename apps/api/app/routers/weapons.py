@@ -9,7 +9,7 @@ from app.database import get_session
 from app.models.player import Player
 from app.models.team import Team
 from app.models.weapon import WeaponType
-from app.services.power_up_engine import fire_weapon
+from app.services.power_up_engine import WeaponError, fire_weapon
 
 router = APIRouter()
 
@@ -34,7 +34,10 @@ async def fire_weapon_endpoint(
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    result = await fire_weapon(session, player.game_id, team, req.target_team_id, req.weapon_type)
+    try:
+        result = await fire_weapon(session, player.game_id, team, req.target_team_id, req.weapon_type)
+    except WeaponError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not result:
         raise HTTPException(status_code=400, detail="Not enough chaos points or invalid weapon")
     return {"status": "fired", "weapon": result.weapon_type, "chaos_points_remaining": team.chaos_points}

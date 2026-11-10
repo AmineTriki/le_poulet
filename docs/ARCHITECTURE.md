@@ -16,7 +16,7 @@ le-poulet/
 │   │   │   ├── main.py             FastAPI app + CORS + lifespan
 │   │   │   ├── config.py           Pydantic settings from env
 │   │   │   ├── database.py         SQLModel async engine + session factory
-│   │   │   ├── redis.py            aioredis connection pool
+│   │   │   ├── redis.py            async Redis client (redis.asyncio) + connection pool
 │   │   │   ├── models/             SQLModel ORM table definitions
 │   │   │   │   ├── game.py         Game, GameStatus, CostumePolicy
 │   │   │   │   ├── player.py       Player, PlayerRole
@@ -34,7 +34,7 @@ le-poulet/
 │   │   │   │   ├── bars.py         Overpass API proxy (Redis cached)
 │   │   │   │   ├── weapons.py      fire weapon
 │   │   │   │   ├── chickens.py     chicken check-in
-│   │   │   │   └── costumes.py     costume voting
+│   │   │   │   └── costumes.py     costume product list (affiliate links)
 │   │   │   ├── services/           Business logic layer
 │   │   │   │   ├── game_service.py create/start/end game lifecycle
 │   │   │   │   ├── bar_service.py  Overpass query + Redis cache
@@ -50,9 +50,9 @@ le-poulet/
 │   │   │   └── websockets/         WS manager + event types + handler
 │   │   ├── data/
 │   │   │   ├── cities.json         City config (center, bbox, tz, etc.)
-│   │   │   ├── challenges_en.json  60+ English challenges
-│   │   │   └── challenges_fr.json  60+ French challenges
-│   │   ├── migrations/             Alembic migration scripts
+│   │   │   ├── challenges_en.json  65 English challenges (incl. 5 each for montreal/nyc/london)
+│   │   │   └── challenges_fr.json  60 French challenges (universal)
+│   │   ├── migrations/             Alembic env (no revisions yet; tables come from create_all at startup)
 │   │   ├── tests/                  pytest async test suite
 │   │   ├── pyproject.toml          uv project config + ruff + mypy
 │   │   └── Dockerfile              Multi-stage Python image
@@ -72,11 +72,10 @@ le-poulet/
 │   │   │       ├── hunt/[code]/    Hunter map view
 │   │   │       ├── chicken/[code]/ Chicken hiding view
 │   │   │       ├── results/[code]/ Post-game scoreboard
-│   │   │       └── challenge/      Camera challenge modal
 │   │   ├── components/
 │   │   │   ├── LeafletMap.tsx      Dynamic OSM map (no SSR)
 │   │   │   └── RouletteWheel.tsx   CSS roulette animation
-│   │   ├── next.config.ts          Transpile packages, bundle analyzer
+│   │   ├── next.config.mjs         Transpile packages, bundle analyzer
 │   │   ├── tailwind.config.ts      Poulet color tokens
 │   │   └── tsconfig.json           Path aliases
 │   │
@@ -144,7 +143,7 @@ le-poulet/
 - **SQLModel** — combines SQLAlchemy ORM + Pydantic validation in one class definition
 - **Alembic** — database migrations, configured in `alembic.ini` and `migrations/env.py`
 - **asyncpg** — high-performance async PostgreSQL driver (used via `sqlalchemy[asyncio]`)
-- **aioredis** — async Redis client for caching and pub/sub
+- **redis (redis.asyncio)** — async Redis client; used for the bar search cache
 - **httpx** — async HTTP client for Overpass API calls
 - **uv** — ultra-fast Python package manager and virtual environment tool
 
@@ -215,7 +214,7 @@ le-poulet/
 
 ## Database Schema
 
-Seven tables managed by SQLModel + Alembic:
+Tables are defined with SQLModel and created at API startup via `SQLModel.metadata.create_all` (`init_db()` in `app/database.py`). Alembic is configured (`alembic.ini`, `migrations/env.py`) but no revision files exist yet. Tables:
 
 ### `games`
 | Column | Type | Notes |
@@ -314,7 +313,7 @@ Seven tables managed by SQLModel + Alembic:
 
 ### Bar Search Cache
 - **Key pattern**: `bars:{lat:.3f}:{lng:.3f}:{radius_m}`
-- **TTL**: 3600 seconds (1 hour)
+- **TTL**: 7200 seconds (2 hours) for live Overpass results; 1800 seconds (30 minutes) when the local fallback data is served
 - **Value**: JSON array of bar objects from Overpass API
 - Avoids hammering the free Overpass API on repeated searches in the same area
 - Cache miss → POST to `https://overpass-api.de/api/interpreter` → parse → cache → return
@@ -374,9 +373,11 @@ WS /ws/{game_id}/{player_id}
 ```
 - Client connects after joining, passes `player_id` as URL param
 - `handler.py` accepts, registers in `ConnectionManager._connections[game_id]`
-- Sends `{"type": "ping"}` every 30s to keep alive
+- Any text frame a client sends is rebroadcast to the game room as `{"from", "data"}`. The server does not send keep-alive pings.
 
 ### Event Types (from `websockets/events.py`)
+
+Only some of these are emitted today: `game:started`, `game:ended`, `player:joined`, `player:left`, `location:update`, `circle:shrink` and `chicken:alert`. The rest are defined as models but not yet broadcast.
 
 | Event type | Direction | Trigger |
 |------------|-----------|---------|
@@ -403,8 +404,7 @@ WS /ws/{game_id}/{player_id}
 
 ## Shrinking Circle Algorithm
 
-The zone circle starts at 1000 m radius centered on the city center.
-Every `gps_shrink_interval_minutes` minutes (default: 15), it shrinks:
+The zone circle starts at 1000 m radius. `initial_circle()` takes whatever centre it is given; the scheduler currently passes the bar coordinates. Shrinking begins once the head start ends. Every `gps_shrink_interval_minutes` minutes (default: 15), it shrinks:
 
 ```python
 # From apps/api/app/services/circle_engine.py
@@ -433,7 +433,7 @@ def shrink_circle(state: CircleState, bar_lat: float, bar_lng: float) -> CircleS
 ```
 
 Shrink schedule (default settings, 2-hour game, 15-min interval):
-- T+0:00 — 1000 m radius, city center
+- T+0:00 (head start over) — 1000 m radius
 - T+0:15 — 600 m, drifting toward bar
 - T+0:30 — 360 m, clearly pointing at neighborhood
 - T+0:45 — 216 m, within a few blocks
@@ -465,7 +465,7 @@ Shrink schedule (default settings, 2-hour game, 15-min interval):
           │         (apps/api / Dockerfile)            │
           └──────┬─────────────────┬───────────────────┘
                  │                 │
-         asyncpg │         aioredis│
+         asyncpg │       redis-py │
                  ▼                 ▼
     ┌────────────────┐   ┌─────────────────────┐
     │  Supabase      │   │  Upstash Redis       │

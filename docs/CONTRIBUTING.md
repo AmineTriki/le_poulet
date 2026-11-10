@@ -9,8 +9,8 @@ Le Poulet is open source and chaotic in the best possible way. Contributions are
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/aminetriki/le-poulet.git
-cd le-poulet
+git clone https://github.com/AmineTriki/le_poulet.git
+cd le_poulet
 pnpm install
 ```
 
@@ -29,8 +29,7 @@ docker compose up -d
 cd apps/api
 cp .env.example .env          # edit DATABASE_URL and SECRET_KEY
 uv sync                       # install Python deps
-uv run alembic upgrade head   # run migrations
-uv run python -m scripts.seed # seed challenges + cities
+uv run python -m scripts.seed # seed challenges + test game (tables are created on API start; no Alembic revisions yet)
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -51,11 +50,7 @@ pnpm expo start               # opens Expo Go QR code
 # or: pnpm ios (requires Xcode 15+)
 ```
 
-Or just run everything at once from the root:
-
-```bash
-make dev
-```
+From the root, `make dev` starts Postgres, Redis and `turbo dev` (the web app only). Run the API separately with `make dev-api`.
 
 ---
 
@@ -164,10 +159,10 @@ BREAKING CHANGE: clients must update status comparisons from "waiting" to "lobby
 | Branch | Purpose |
 |--------|---------|
 | `main` | Production — auto-deploys to Vercel, Railway, triggers release-please |
-| `dev` | Integration branch — CI runs on push |
-| `feat/<name>` | Feature work — PR target is `dev` |
-| `fix/<name>` | Bug fixes — PR target is `dev` or `main` for hotfixes |
-| `chore/<name>` | Maintenance — PR target is `dev` |
+| `main` | Default branch. CI runs on PRs; pushes deploy web/API. (CI also targets a `dev` branch if you create one.) |
+| `feat/<name>` | Feature work — PR target is `main` |
+| `fix/<name>` | Bug fixes — PR target is `main` |
+| `chore/<name>` | Maintenance — PR target is `main` |
 
 Direct pushes to `main` are blocked by the `no-commit-to-branch` pre-commit hook.
 
@@ -175,13 +170,13 @@ Direct pushes to `main` are blocked by the `no-commit-to-branch` pre-commit hook
 
 ## Pull Request Process
 
-1. **Branch** off `dev` (or `main` for hotfixes).
+1. **Branch** off `main`.
 2. Write the code with tests.
 3. Run the full check locally:
    ```bash
    make lint test
    ```
-4. Open a PR against `dev`. Fill in:
+4. Open a PR against `main`. Fill in:
    - What does this change?
    - Why is this the right approach?
    - How was it tested?

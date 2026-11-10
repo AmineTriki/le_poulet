@@ -13,4 +13,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 
 
 def t(key: str, language: str = "en") -> str:
-    return TRANSLATIONS.get(key, {}).get(language, key)
+    entry = TRANSLATIONS.get(key)
+    if entry is None:
+        return key
+    lang = (language or "en").lower().replace("_", "-").split("-")[0]
+    return entry.get(lang) or entry["en"]

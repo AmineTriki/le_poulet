@@ -123,7 +123,7 @@ export default function CreatePage() {
         hostToken: data.host_token,
       });
       router.push(`/lobby/${data.game_code}`);
-    } catch (err) {
+    } catch {
       setError("Failed to create game. Is the server running?");
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function CreatePage() {
   const inputClass =
     "w-full bg-transparent border border-poulet-feather/40 text-poulet-cream font-body px-4 py-3 focus:outline-none focus:border-poulet-gold transition-colors";
   const pillClass = (active: boolean) =>
-    `px-4 py-2 font-mono text-sm uppercase border transition-all cursor-pointer ${
+    `px-4 py-2 min-h-11 font-mono text-sm uppercase border transition-all cursor-pointer ${
       active
         ? "bg-poulet-gold text-poulet-black border-poulet-gold"
         : "border-poulet-feather/40 text-poulet-feather hover:border-poulet-gold hover:text-poulet-gold"
@@ -141,7 +141,7 @@ export default function CreatePage() {
   const steps = ["Setup", "Players", "Rules", "Bar", "Suit", "Launch"];
 
   return (
-    <div className="min-h-screen bg-poulet-black px-6 py-12">
+    <div className="min-h-dvh bg-poulet-black px-4 sm:px-6 py-12 pt-safe pb-safe">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-10">
@@ -180,6 +180,7 @@ export default function CreatePage() {
               <input
                 className={inputClass}
                 placeholder="Friday Night Hunt"
+                aria-label="Game name"
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
               />
@@ -190,7 +191,7 @@ export default function CreatePage() {
               </label>
               <div className="flex flex-wrap gap-2">
                 {CITIES.map((c) => (
-                  <button key={c} onClick={() => update("city", c)} className={pillClass(form.city === c)}>
+                  <button type="button" key={c} aria-pressed={form.city === c} onClick={() => update("city", c)} className={pillClass(form.city === c)}>
                     {c}
                   </button>
                 ))}
@@ -202,7 +203,7 @@ export default function CreatePage() {
               </label>
               <div className="flex gap-2">
                 {(["en", "fr"] as const).map((l) => (
-                  <button key={l} onClick={() => update("language", l)} className={pillClass(form.language === l)}>
+                  <button type="button" key={l} aria-pressed={form.language === l} onClick={() => update("language", l)} className={pillClass(form.language === l)}>
                     {l === "en" ? "English" : "Français"}
                   </button>
                 ))}
@@ -222,13 +223,15 @@ export default function CreatePage() {
               <input
                 className={inputClass}
                 placeholder="Player name"
+                aria-label="Player name"
                 value={newPlayer}
                 onChange={(e) => setNewPlayer(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addPlayer()}
               />
               <button
+                type="button"
                 onClick={addPlayer}
-                className="bg-poulet-gold text-poulet-black font-heading text-lg px-6 uppercase hover:brightness-110 transition-all"
+                className="bg-poulet-gold text-poulet-black font-heading text-lg px-6 min-h-11 uppercase hover:brightness-110 transition-all"
               >
                 Add
               </button>
@@ -245,8 +248,10 @@ export default function CreatePage() {
                     <span className="font-mono text-poulet-gold text-xs">HOST</span>
                   )}
                   <button
+                    type="button"
+                    aria-label={`Remove ${p.name}`}
                     onClick={() => update("players", form.players.filter((_, j) => j !== i))}
-                    className="text-poulet-feather hover:text-poulet-red transition-colors text-sm opacity-0 group-hover:opacity-100"
+                    className="text-poulet-feather hover:text-poulet-red transition-colors text-sm min-h-11 min-w-11 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
                   >
                     ✕
                   </button>
@@ -286,6 +291,8 @@ export default function CreatePage() {
                 {([1, 2, 3, 4] as const).map((n) => (
                   <button
                     key={n}
+                    type="button"
+                    aria-pressed={form.numChickens === n}
                     onClick={() => update("numChickens", n)}
                     className={pillClass(form.numChickens === n)}
                   >
@@ -307,6 +314,7 @@ export default function CreatePage() {
                 step={1}
                 value={form.headStartMinutes}
                 onChange={(e) => { update("headStartMinutes", Number(e.target.value)); setTestMode(false); }}
+                aria-label="Head start in minutes"
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
@@ -327,6 +335,7 @@ export default function CreatePage() {
                 step={0.5}
                 value={form.gameDurationHours}
                 onChange={(e) => { update("gameDurationHours", Number(e.target.value)); setTestMode(false); }}
+                aria-label="Game duration in hours"
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
@@ -343,6 +352,8 @@ export default function CreatePage() {
                 {BUY_INS.map((b) => (
                   <button
                     key={b}
+                    type="button"
+                    aria-pressed={form.buyInAmount === b}
                     onClick={() => update("buyInAmount", b)}
                     className={pillClass(form.buyInAmount === b)}
                   >
@@ -368,8 +379,11 @@ export default function CreatePage() {
                 </div>
               </div>
               <button
+                type="button"
+                role="switch"
+                aria-checked={form.chaosMode}
                 onClick={() => update("chaosMode", !form.chaosMode)}
-                aria-label="Toggle Chaos Mode"
+                aria-label="Chaos Mode"
                 className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
                   form.chaosMode ? "bg-poulet-gold shadow-gold" : "bg-poulet-feather/30"
                 }`}
@@ -396,6 +410,9 @@ export default function CreatePage() {
                 <div key={key} className="flex items-center justify-between">
                   <span className="font-body text-poulet-cream/70 text-sm">{label}</span>
                   <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form[key]}
                     onClick={() => update(key, !form[key])}
                     aria-label={label}
                     className={`relative w-10 h-5 rounded-full transition-all duration-300 ${
@@ -468,6 +485,8 @@ export default function CreatePage() {
                 ].map(({ id, label }) => (
                   <button
                     key={id}
+                    type="button"
+                    aria-pressed={form.costumePolicy === id}
                     onClick={() => update("costumePolicy", id)}
                     className={pillClass(form.costumePolicy === id)}
                   >
@@ -570,7 +589,7 @@ export default function CreatePage() {
             </div>
 
             {error && (
-              <div className="border border-poulet-red bg-poulet-red/10 px-4 py-3 font-mono text-poulet-red text-sm">
+              <div role="alert" className="border border-poulet-red bg-poulet-red/10 px-4 py-3 font-mono text-poulet-red text-sm">
                 {error}
               </div>
             )}
@@ -594,7 +613,7 @@ export default function CreatePage() {
           {step > 1 && (
             <button
               onClick={() => setStep((s) => s - 1)}
-              className="border border-poulet-feather/40 text-poulet-feather font-mono px-6 py-3 hover:border-poulet-gold hover:text-poulet-gold transition-all"
+              className="border border-poulet-feather/40 text-poulet-feather font-mono px-6 py-3 min-h-11 hover:border-poulet-gold hover:text-poulet-gold transition-all"
             >
               ← Back
             </button>
