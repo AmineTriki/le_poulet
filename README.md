@@ -136,7 +136,7 @@ make dev-mobile  # Expo (separate terminal)
 ### Phase 2: The Hunt (2 hours)
 
 - Teams unlock the live map — GPS positions visible for all players
-- A 1km zone circle appears around the Chicken's bar (with some random offset)
+- A 1km zone circle appears when the head start ends
 - Every 15 minutes the circle shrinks toward the Chicken's bar
 - Teams earn points by completing photo and video challenges
 - Chaos points from challenges unlock weapons
