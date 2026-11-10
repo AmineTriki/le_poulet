@@ -26,13 +26,13 @@ export default function ChickenPage() {
     }
   }, [code, router]);
 
-  useGameSocket(session?.gameId ?? null, session?.playerId ?? null, handleWsMessage);
+  const { status: wsStatus } = useGameSocket(session?.gameId ?? null, session?.playerId ?? null, handleWsMessage);
 
   return (
-    <div className="h-dvh bg-poulet-black flex flex-col">
+    <div className="h-dvh bg-poulet-black flex flex-col pt-safe">
       {/* Header */}
       <div
-        className={`h-14 border-b flex items-center justify-between px-6 flex-shrink-0 transition-all duration-500 ${
+        className={`h-14 border-b flex items-center justify-between px-4 gap-2 flex-shrink-0 transition-all duration-500 ${
           isDanger ? "border-poulet-red bg-poulet-red/10" : "border-poulet-feather/20"
         }`}
       >
@@ -42,10 +42,17 @@ export default function ChickenPage() {
         <div className="font-mono text-poulet-feather text-sm">{code}</div>
       </div>
 
+      {wsStatus !== "open" && (
+        <div role="status" className="bg-poulet-red/20 border-b border-poulet-red/50 px-4 py-1 text-center font-mono text-xs text-poulet-cream flex-shrink-0">
+          {wsStatus === "connecting" ? "Connecting to game…" : "Connection lost — reconnecting…"}
+        </div>
+      )}
+
       {/* Proximity alert bar */}
       {nearestDistance !== null && (
         <div
-          className={`px-6 py-2 border-b flex items-center gap-4 flex-shrink-0 transition-colors ${
+          role="alert"
+          className={`px-4 py-2 border-b flex items-center gap-4 flex-shrink-0 transition-colors ${
             isDanger ? "border-poulet-red/40 bg-poulet-red/5" : "border-poulet-feather/20"
           }`}
         >
@@ -67,7 +74,7 @@ export default function ChickenPage() {
       )}
 
       {/* Map — chicken's GPS is reported but their position is NOT shown to hunters */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden pb-safe">
         <LeafletMap
           isChicken
           playerToken={session?.playerToken}
