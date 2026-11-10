@@ -7,8 +7,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.config import settings
 from app.database import get_session
+from app.models.game import Game, GameStatus
 from app.models.location import LocationUpdate
-from app.models.player import Player
+from app.models.player import Player, PlayerRole
 from app.schemas.player import LocationUpdateRequest
 from app.websockets.manager import manager
 
@@ -24,6 +25,10 @@ async def update_location(
     player = player_result.first()
     if not player:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    game = await session.get(Game, player.game_id)
+    if game is not None and game.status == GameStatus.ENDED:
+        return {"status": "game_ended"}
 
     rate_cutoff = datetime.utcnow() - timedelta(seconds=settings.location_rate_limit_seconds)
     if player.last_location_at and player.last_location_at > rate_cutoff:
@@ -45,6 +50,10 @@ async def update_location(
     )
     session.add(loc)
     await session.commit()
+
+    # A chicken's position is the game's secret: it is stored but never broadcast to the other players.
+    if player.role == PlayerRole.CHICKEN:
+        return {"status": "ok"}
 
     await manager.broadcast(
         player.game_id,

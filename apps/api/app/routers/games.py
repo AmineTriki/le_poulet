@@ -1,25 +1,35 @@
+import secrets
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.database import get_session
-from app.models.game import Game
-from app.models.player import Player
+from app.models.game import Game, GameStatus
+from app.models.player import Player, PlayerRole
 from app.models.team import Team
 from app.schemas.game import GameCreate, GameStartRequest
-from app.services.game_service import create_game, end_game, start_game
+from app.services.game_service import GameStartError, create_game, end_game, start_game, viewer_is_chicken
 from app.services.scheduler import _circles  # noqa: PLC2701
 from app.websockets.manager import manager
 
 router = APIRouter()
 
 
+def _may_see_position(target: Player, viewer_id: str | None, status: GameStatus) -> bool:
+    """Chicken positions are secret except to themselves, and to everyone once the game has ended."""
+    return target.role != PlayerRole.CHICKEN or target.id == viewer_id or status == GameStatus.ENDED
+
+
+def _token_matches(expected: str, supplied: str) -> bool:
+    return secrets.compare_digest(expected.encode(), supplied.encode())
+
+
 @router.post("/", response_model=dict[str, Any])
 async def create_new_game(
     data: GameCreate,
-    host_name: str,
+    host_name: str = Query(min_length=1, max_length=50),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
     game, host = await create_game(session, data, host_name)
@@ -27,13 +37,19 @@ async def create_new_game(
 
 
 @router.get("/{code}", response_model=dict[str, Any])
-async def get_game(code: str, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
+async def get_game(
+    code: str,
+    player_token: str | None = None,
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, Any]:
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
     players_result = await session.exec(select(Player).where(Player.game_id == game.id))
     player_count = len(players_result.all())
+    # The bar is the chicken's secret: only chickens (via player_token) or everyone after the game ends.
+    reveal_bar = game.status == GameStatus.ENDED or await viewer_is_chicken(session, game.id, player_token)
     return {
         "id": game.id,
         "code": game.code,
@@ -47,21 +63,33 @@ async def get_game(code: str, session: AsyncSession = Depends(get_session)) -> d
         "num_chickens": game.num_chickens,
         "head_start_minutes": game.head_start_minutes,
         "game_duration_hours": game.game_duration_hours,
-        "bar_name": game.bar_name,
-        "bar_lat": game.bar_lat,
-        "bar_lng": game.bar_lng,
+        "bar_name": game.bar_name if reveal_bar else None,
+        "bar_lat": game.bar_lat if reveal_bar else None,
+        "bar_lng": game.bar_lng if reveal_bar else None,
         "head_start_ends_at": game.head_start_ends_at.isoformat() if game.head_start_ends_at else None,
         "game_ends_at": game.game_ends_at.isoformat() if game.game_ends_at else None,
     }
 
 
 @router.get("/{code}/state", response_model=dict[str, Any])
-async def get_game_state(code: str, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
+async def get_game_state(
+    code: str,
+    player_token: str | None = None,
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, Any]:
     """Full game state snapshot — safe to call on reconnect."""
     result = await session.exec(select(Game).where(Game.code == code.upper()))
     game = result.first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
+
+    reveal_bar = game.status == GameStatus.ENDED or await viewer_is_chicken(session, game.id, player_token)
+    viewer_id: str | None = None
+    if player_token:
+        viewer_result = await session.exec(select(Player).where(Player.token == player_token))
+        viewer = viewer_result.first()
+        if viewer and viewer.game_id == game.id:
+            viewer_id = viewer.id
 
     players_result = await session.exec(select(Player).where(Player.game_id == game.id))
     players = [
@@ -73,8 +101,9 @@ async def get_game_state(code: str, session: AsyncSession = Depends(get_session)
             "team_id": p.team_id,
             "score": p.score,
             "is_online": p.is_online,
-            "last_lat": p.last_lat,
-            "last_lng": p.last_lng,
+            # A chicken's position is hidden from everyone but themselves until the game ends.
+            "last_lat": p.last_lat if _may_see_position(p, viewer_id, game.status) else None,
+            "last_lng": p.last_lng if _may_see_position(p, viewer_id, game.status) else None,
         }
         for p in players_result.all()
     ]
@@ -103,9 +132,9 @@ async def get_game_state(code: str, session: AsyncSession = Depends(get_session)
             "city": game.city,
             "language": game.language,
             "chaos_mode": game.chaos_mode,
-            "bar_name": game.bar_name,
-            "bar_lat": game.bar_lat,
-            "bar_lng": game.bar_lng,
+            "bar_name": game.bar_name if reveal_bar else None,
+            "bar_lat": game.bar_lat if reveal_bar else None,
+            "bar_lng": game.bar_lng if reveal_bar else None,
             "head_start_ends_at": game.head_start_ends_at.isoformat() if game.head_start_ends_at else None,
             "game_ends_at": game.game_ends_at.isoformat() if game.game_ends_at else None,
         },
@@ -137,16 +166,23 @@ async def start_existing_game(
         raise HTTPException(status_code=400, detail="No host set for this game")
 
     host = await session.get(Player, game.host_player_id)
-    if not host or host.token != req.host_token:
+    if not host or not _token_matches(host.token, req.host_token):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
     if req.bar_name:
+        if req.bar_lat is None or req.bar_lng is None:
+            raise HTTPException(status_code=422, detail="bar_lat and bar_lng are required with bar_name")
+        game.bar_id = req.bar_id
         game.bar_name = req.bar_name
         game.bar_lat = req.bar_lat
         game.bar_lng = req.bar_lng
         session.add(game)
 
-    game = await start_game(session, game)
+    try:
+        game = await start_game(session, game)
+    except GameStartError as exc:
+        await session.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     await manager.broadcast(game.id, {"type": "game:started", "game_id": game.id, "status": game.status})
     return {
         "status": game.status,
@@ -170,8 +206,11 @@ async def end_existing_game(
         raise HTTPException(status_code=400, detail="No host set for this game")
 
     host = await session.get(Player, game.host_player_id)
-    if not host or host.token != host_token:
+    if not host or not _token_matches(host.token, host_token):
         raise HTTPException(status_code=403, detail="Unauthorized")
+
+    if game.status == GameStatus.ENDED:
+        return {"status": game.status, "ended_at": game.ended_at.isoformat() if game.ended_at else None}
 
     game = await end_game(session, game)
     _circles.pop(game.id, None)

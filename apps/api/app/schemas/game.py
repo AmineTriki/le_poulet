@@ -1,20 +1,21 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.game import CostumePolicy, GameStatus
 
 
 class GameCreate(BaseModel):
-    name: str
-    city: str
-    language: str = "en"
-    num_chickens: int = 1
-    head_start_minutes: int = 30
-    game_duration_hours: float = 2.0
-    team_size: int = 4
-    gps_shrink_interval_minutes: int = 15
-    buy_in_amount: int = 0
+    # Bounds mirror the Game table model (table models do not validate on construction).
+    name: str = Field(min_length=1, max_length=100)
+    city: str = Field(min_length=1, max_length=50)
+    language: str = Field(default="en", max_length=5)
+    num_chickens: int = Field(default=1, ge=1, le=4)
+    head_start_minutes: int = Field(default=30, ge=10, le=60)
+    game_duration_hours: float = Field(default=2.0, ge=1.0, le=4.0)
+    team_size: int = Field(default=4, ge=2, le=10)
+    gps_shrink_interval_minutes: int = Field(default=15, ge=5, le=30)
+    buy_in_amount: int = Field(default=0, ge=0, le=100_000)
     costume_policy: CostumePolicy = CostumePolicy.ENCOURAGED
     chaos_mode: bool = False
     allow_calls: bool = True
@@ -50,10 +51,10 @@ class GameRead(BaseModel):
 
 class GameStartRequest(BaseModel):
     host_token: str
-    bar_id: str | None = None
-    bar_name: str | None = None
-    bar_lat: float | None = None
-    bar_lng: float | None = None
+    bar_id: str | None = Field(default=None, max_length=100)
+    bar_name: str | None = Field(default=None, max_length=200)
+    bar_lat: float | None = Field(default=None, ge=-90, le=90)
+    bar_lng: float | None = Field(default=None, ge=-180, le=180)
 
 
 class CircleState(BaseModel):
