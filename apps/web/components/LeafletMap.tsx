@@ -27,6 +27,15 @@ interface LeafletMapProps {
   playerToken?: string;
 }
 
+function esc(v: string): string {
+  return v
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export default function LeafletMap({
   center = [45.5017, -73.5673],
   isChicken = false,
@@ -42,13 +51,18 @@ export default function LeafletMap({
   const markersRef = useRef<Map<string, import("leaflet").Marker>>(new Map());
   const circleLayerRef = useRef<import("leaflet").Circle | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   // Initialize map once
   useEffect(() => {
     if (!mapDivRef.current || mapRef.current) return;
 
+    let cancelled = false;
+
     const init = async () => {
       const L = await import("leaflet");
+      // Effect cleaned up (unmount / StrictMode re-run) while loading: don't create a second map.
+      if (cancelled || !mapDivRef.current || mapRef.current) return;
       leafletRef.current = L;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,6 +101,7 @@ export default function LeafletMap({
     void init();
 
     return () => {
+      cancelled = true;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -139,7 +154,11 @@ export default function LeafletMap({
     }
 
     for (const player of players) {
-      const bg = player.color ?? (player.isMe ? "#F5C518" : "#8B7355");
+      const bg = /^#[0-9a-fA-F]{3,8}$/.test(player.color ?? "")
+        ? (player.color as string)
+        : player.isMe
+          ? "#F5C518"
+          : "#8B7355";
       const border = player.isMe ? "2px solid #0A0805" : "1px solid rgba(0,0,0,0.5)";
       const icon = L.divIcon({
         html: `<div style="
@@ -149,7 +168,7 @@ export default function LeafletMap({
           border:${border};
           filter:drop-shadow(0 1px 3px rgba(0,0,0,0.7));
           box-sizing:border-box;
-        ">${player.emoji}</div>`,
+        ">${esc(player.emoji)}</div>`,
         className: "",
         iconSize: [34, 34],
         iconAnchor: [17, 17],
@@ -161,7 +180,7 @@ export default function LeafletMap({
       } else {
         const m = L.marker([player.lat, player.lng], { icon })
           .addTo(map)
-          .bindTooltip(`${player.emoji} ${player.name}`, {
+          .bindTooltip(`${esc(player.emoji)} ${esc(player.name)}`, {
             permanent: player.isMe,
             direction: "top",
             offset: [0, -20],
@@ -173,7 +192,11 @@ export default function LeafletMap({
 
   // GPS reporting
   useEffect(() => {
-    if (!playerToken || !navigator.geolocation) return;
+    if (!playerToken) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoError("Location isn't supported on this device.");
+      return;
+    }
     const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     let lastSent = 0;
 
@@ -182,6 +205,7 @@ export default function LeafletMap({
         const now = Date.now();
         if (now - lastSent < 5000) return;
         lastSent = now;
+        setGeoError(null);
         void fetch(`${API}/api/v1/locations/update`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -193,9 +217,15 @@ export default function LeafletMap({
             heading: pos.coords.heading,
             speed_ms: pos.coords.speed,
           }),
-        });
+        }).catch(() => undefined);
       },
-      undefined,
+      (err) => {
+        setGeoError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location is blocked. Enable location for this site in your browser settings, then reload."
+            : "Can't get your location right now. Check GPS and signal.",
+        );
+      },
       { enableHighAccuracy: true, maximumAge: 3000 },
     );
 
@@ -207,8 +237,16 @@ export default function LeafletMap({
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <div ref={mapDivRef} className="w-full h-full" />
+      {geoError && (
+        <div
+          role="alert"
+          className="absolute top-14 left-3 right-3 z-[1000] bg-poulet-black/95 border border-poulet-red px-3 py-2 font-mono text-poulet-red text-xs text-center"
+        >
+          {geoError}
+        </div>
+      )}
       {isChicken && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-poulet-black/90 border border-poulet-red px-4 py-2 font-mono text-poulet-red text-xs text-center whitespace-nowrap">
+        <div className="absolute top-4 left-3 right-3 z-[1000] bg-poulet-black/90 border border-poulet-red px-3 py-2 font-mono text-poulet-red text-xs text-center">
           🐔 Your location is hidden from hunters
         </div>
       )}
