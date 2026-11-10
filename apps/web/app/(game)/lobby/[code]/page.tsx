@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { loadSession } from "@hooks/useGameSession";
+import type { GameSession } from "@hooks/useGameSession";
 import { useGameSocket } from "@hooks/useGameSocket";
 import type { WsMessage } from "@hooks/useGameSocket";
 
@@ -37,8 +38,14 @@ export default function LobbyPage() {
   const [rouletteDone, setRouletteDone] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
-
-  const session = typeof window !== "undefined" ? loadSession() : null;
+  const [loadError, setLoadError] = useState("");
+  // Read localStorage after mount so server and first client render match.
+  const [session, setSession] = useState<GameSession | null>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  useEffect(() => {
+    setSession(loadSession());
+    setSessionLoaded(true);
+  }, []);
   const isHost = session?.isHost === true && session.gameCode === code;
   const gameId = game?.id ?? session?.gameId ?? null;
   const playerId = session?.playerId ?? null;
@@ -50,12 +57,19 @@ export default function LobbyPage() {
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const fetchState = async () => {
-      const res = await fetch(`${API}/api/v1/games/${code}`);
-      if (!res.ok) return;
-      const g = await res.json() as GameInfo;
-      setGame(g);
-      const pRes = await fetch(`${API}/api/v1/players/${g.id}/all`);
-      if (pRes.ok) setPlayers(await pRes.json() as Player[]);
+      try {
+        const res = await fetch(`${API}/api/v1/games/${code}`);
+        if (!res.ok) {
+          setLoadError(res.status === 404 ? "Game not found. Check your code." : "Couldn't load the game.");
+          return;
+        }
+        const g = await res.json() as GameInfo;
+        setGame(g);
+        const pRes = await fetch(`${API}/api/v1/players/${g.id}/all`);
+        if (pRes.ok) setPlayers(await pRes.json() as Player[]);
+      } catch {
+        setLoadError("Can't reach the server. Check your connection.");
+      }
     };
     void fetchState();
   }, [code]);
@@ -94,12 +108,17 @@ export default function LobbyPage() {
     }
   }, [redirectByRole]);
 
-  useGameSocket(gameId, playerId, handleWsMessage);
+  const { status: wsStatus } = useGameSocket(gameId, playerId, handleWsMessage);
 
-  const copyLink = () => {
-    void navigator.clipboard.writeText(joinUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(joinUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard blocked (insecure context / permission): fall back to a prompt.
+      window.prompt("Copy this link", joinUrl);
+    }
   };
 
   const handleStartGame = async () => {
@@ -126,8 +145,8 @@ export default function LobbyPage() {
 
   if (showRoulette) {
     return (
-      <div className="min-h-screen bg-poulet-black flex flex-col items-center justify-center px-6 py-12">
-        <h2 className="font-heading text-poulet-gold text-5xl uppercase mb-8 text-center">
+      <div className="min-h-dvh bg-poulet-black flex flex-col items-center justify-center px-4 py-12 pt-safe pb-safe">
+        <h2 className="font-heading text-poulet-gold text-4xl sm:text-5xl uppercase mb-8 text-center">
           Who Is The Chicken?
         </h2>
         <RouletteWheel
@@ -161,8 +180,18 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-poulet-black px-6 py-12">
+    <div className="min-h-dvh bg-poulet-black px-4 sm:px-6 py-12 pt-safe pb-safe">
+      {wsStatus !== "open" && gameId && (
+        <div role="status" className="fixed top-0 inset-x-0 z-50 bg-poulet-red/90 px-4 py-1 text-center font-mono text-xs text-poulet-cream">
+          {wsStatus === "connecting" ? "Connecting…" : "Connection lost — reconnecting…"}
+        </div>
+      )}
       <div className="max-w-2xl mx-auto space-y-8">
+        {loadError && (
+          <div role="alert" className="border border-poulet-red bg-poulet-red/10 px-4 py-3 font-mono text-poulet-red text-sm text-center">
+            {loadError}
+          </div>
+        )}
         {/* Game code */}
         <div className="text-center">
           <div className="font-mono text-poulet-feather text-sm uppercase mb-2">
@@ -170,7 +199,7 @@ export default function LobbyPage() {
           </div>
           <div
             className="font-heading text-poulet-gold"
-            style={{ fontSize: "6rem", lineHeight: 1 }}
+            style={{ fontSize: "clamp(3.5rem, 20vw, 6rem)", lineHeight: 1 }}
           >
             {code}
           </div>
@@ -180,8 +209,8 @@ export default function LobbyPage() {
         {/* Share buttons */}
         <div className="flex gap-3">
           <button
-            onClick={copyLink}
-            className="flex-1 border border-poulet-gold text-poulet-gold font-mono text-sm py-3 hover:bg-poulet-gold hover:text-poulet-black transition-all"
+            onClick={() => void copyLink()}
+            className="flex-1 border border-poulet-gold text-poulet-gold font-mono text-sm py-3 min-h-11 hover:bg-poulet-gold hover:text-poulet-black transition-all"
           >
             {copied ? "✓ Copied!" : "Copy Link"}
           </button>
@@ -190,7 +219,7 @@ export default function LobbyPage() {
               const text = `Join my Le Poulet chicken hunt! Code: ${code} — ${joinUrl}`;
               window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
             }}
-            className="border border-poulet-feather/40 text-poulet-feather font-mono text-sm px-4 py-3 hover:border-poulet-gold hover:text-poulet-gold transition-all"
+            className="border border-poulet-feather/40 text-poulet-feather font-mono text-sm px-4 py-3 min-h-11 hover:border-poulet-gold hover:text-poulet-gold transition-all"
           >
             WhatsApp
           </button>
@@ -258,12 +287,12 @@ export default function LobbyPage() {
             SPIN THE ROULETTE 🎡
           </button>
         )}
-        {!isHost && (
+        {sessionLoaded && !isHost && (
           <div className="border border-poulet-feather/20 p-6 text-center font-body text-poulet-feather italic">
             Waiting for the host to spin the roulette…
           </div>
         )}
-        {isHost && players.length < 2 && (
+        {sessionLoaded && isHost && players.length < 2 && (
           <div className="border border-poulet-feather/20 p-6 text-center font-body text-poulet-feather italic">
             Waiting for more players to join…
           </div>

@@ -89,19 +89,19 @@ export function RouletteWheel({ players, onResult }: RouletteWheelProps) {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="relative">
-        <canvas ref={canvasRef} width={380} height={380} className="rounded-full border-2 border-poulet-gold shadow-gold" />
+        <canvas ref={canvasRef} width={380} height={380} role="img" aria-label="Roulette wheel of players" className="max-w-full h-auto rounded-full border-2 border-poulet-gold shadow-gold" />
       </div>
       {winner && (
-        <div className="text-center bwak-text">
-          <div className="font-heading text-poulet-gold text-5xl uppercase">{winner.emoji} {winner.name}</div>
+        <div className="text-center bwak-text" role="status">
+          <div className="font-heading text-poulet-gold text-4xl sm:text-5xl uppercase break-words">{winner.emoji} {winner.name}</div>
           <div className="font-mono text-poulet-cream text-xl mt-1 tracking-widest">IS THE CHICKEN 🐔</div>
         </div>
       )}
-      <div className="flex gap-4">
-        <button onClick={() => spin(false)} disabled={spinning} className="bg-poulet-gold text-poulet-black font-heading text-xl px-8 py-3 uppercase hover:brightness-110 disabled:opacity-50 transition-all">
+      <div className="flex flex-wrap justify-center gap-4">
+        <button onClick={() => spin(false)} disabled={spinning} className="bg-poulet-gold text-poulet-black font-heading text-xl px-8 py-3 min-h-11 uppercase hover:brightness-110 disabled:opacity-50 transition-all">
           {spinning ? "SPINNING..." : "SLOW SPIN"}
         </button>
-        <button onClick={() => spin(true)} disabled={spinning} className="border-2 border-poulet-gold text-poulet-gold font-heading text-xl px-8 py-3 uppercase hover:bg-poulet-gold hover:text-poulet-black disabled:opacity-50 transition-all">
+        <button onClick={() => spin(true)} disabled={spinning} className="border-2 border-poulet-gold text-poulet-gold font-heading text-xl px-8 py-3 min-h-11 uppercase hover:bg-poulet-gold hover:text-poulet-black disabled:opacity-50 transition-all">
           FAST ⚡
         </button>
       </div>

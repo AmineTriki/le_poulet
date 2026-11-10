@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   --poulet-black: #0A0805;
@@ -15,7 +15,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+button, a { touch-action: manipulation; }
+
+:focus-visible { outline: 2px solid var(--poulet-gold); outline-offset: 2px; }
 
 body {
   background-color: var(--poulet-black);
@@ -50,7 +54,7 @@ body::after {
 
 /* Floating feathers animation */
 @keyframes float-feather {
-  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  0% { transform: translateY(100dvh) rotate(0deg); opacity: 0; }
   10% { opacity: 0.6; }
   90% { opacity: 0.4; }
   100% { transform: translateY(-20px) rotate(720deg); opacity: 0; }
@@ -115,3 +119,17 @@ body::after {
 }
 
 .leaflet-tile-pane { filter: saturate(0.7) brightness(0.8); }
+
+/* Safe-area helpers for notched phones */
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .feather { display: none; }
+}
