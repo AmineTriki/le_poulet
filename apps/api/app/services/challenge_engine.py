@@ -45,7 +45,7 @@ async def get_random_challenge(
     if not available:
         return None
 
-    weights = [c.points for c in available]
+    weights = [max(c.points, 1) for c in available]  # all-zero weights would raise ValueError
     return random.choices(available, weights=weights, k=1)[0]
 
 
@@ -56,9 +56,10 @@ async def score_submission(
     approved: bool,
 ) -> ChallengeSubmission | None:
     submission = await session.get(ChallengeSubmission, submission_id)
-    if not submission:
+    if not submission or submission.status != SubmissionStatus.PENDING:
         return None
 
+    chicken_score = max(0, min(100, chicken_score))
     submission.status = SubmissionStatus.APPROVED if approved else SubmissionStatus.REJECTED
     submission.chicken_score = chicken_score
 
