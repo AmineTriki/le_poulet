@@ -80,6 +80,7 @@ export default function HuntPage() {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [challengeSubmitting, setChallengeSubmitting] = useState(false);
   const [challengeDone, setChallengeDone] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const myTeamId = useRef<string | null>(null);
 
   const isHeadStart = gameState?.status === "head_start";
@@ -91,8 +92,18 @@ export default function HuntPage() {
   // Fetch initial game state
   useEffect(() => {
     const fetch_ = async () => {
-      const res = await fetch(`${API}/api/v1/games/${code}/state`);
-      if (!res.ok) return;
+      let res: Response;
+      try {
+        res = await fetch(`${API}/api/v1/games/${code}/state`);
+      } catch {
+        setLoadError("Can't reach the server. Check your connection.");
+        return;
+      }
+      if (!res.ok) {
+        setLoadError(res.status === 404 ? "Game not found." : "Couldn't load the game.");
+        return;
+      }
+      setLoadError("");
       const data = await res.json() as {
         game: GameState;
         players: Array<{ id: string; last_lat: number | null; last_lng: number | null; emoji: string; name: string; team_id: string | null }>;
@@ -137,8 +148,8 @@ export default function HuntPage() {
 
   const fetchChallenge = async (gameId: string, teamId: string, lang = "en") => {
     const city = gameState?.bar_lng !== undefined ? "montreal" : "montreal";
-    const res = await fetch(`${API}/api/v1/challenges/random/${gameId}/${teamId}?city=${city}`);
-    if (res.ok) {
+    const res = await fetch(`${API}/api/v1/challenges/random/${gameId}/${teamId}?city=${city}`).catch(() => null);
+    if (res?.ok) {
       setChallenge(await res.json() as Challenge);
       setChallengeDone(false);
     } else {
@@ -149,7 +160,7 @@ export default function HuntPage() {
   const submitChallenge = async () => {
     if (!challenge || !session || !myTeamId.current || !gameState) return;
     setChallengeSubmitting(true);
-    await fetch(`${API}/api/v1/challenges/submit`, {
+    const submitRes = await fetch(`${API}/api/v1/challenges/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -159,8 +170,13 @@ export default function HuntPage() {
         player_token: session.playerToken,
         media_url: "",
       }),
-    });
+    }).catch(() => null);
     setChallengeSubmitting(false);
+    if (!submitRes?.ok) {
+      setLoadError("Couldn't submit the challenge. Try again.");
+      return;
+    }
+    setLoadError("");
     setChallengeDone(true);
     // Fetch next challenge after 2s
     setTimeout(() => void fetchChallenge(gameState.id, myTeamId.current!, gameState.language), 2000);
@@ -205,12 +221,12 @@ export default function HuntPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, router, gameState?.id]);
 
-  useGameSocket(gameState?.id ?? null, session?.playerId ?? null, handleWsMessage);
+  const { status: wsStatus } = useGameSocket(gameState?.id ?? null, session?.playerId ?? null, handleWsMessage);
 
   const lang = gameState?.language ?? "en";
 
   return (
-    <div className="h-dvh bg-poulet-black flex flex-col overflow-hidden">
+    <div className="h-dvh bg-poulet-black flex flex-col overflow-hidden pt-safe">
       {/* Header */}
       <div className="h-14 border-b border-poulet-feather/20 flex items-center justify-between px-4 flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
@@ -228,12 +244,24 @@ export default function HuntPage() {
           <div className="font-mono text-xl text-poulet-gold tabular-nums">{timer}</div>
           <button
             onClick={() => setShowSidebar((s) => !s)}
-            className="font-mono text-poulet-feather text-xs border border-poulet-feather/30 px-2 py-1 hover:border-poulet-gold hover:text-poulet-gold transition-colors"
+            aria-pressed={showSidebar}
+            className="font-mono text-poulet-feather text-xs border border-poulet-feather/30 px-3 min-h-11 min-w-11 hover:border-poulet-gold hover:text-poulet-gold transition-colors"
           >
             {showSidebar ? "Map" : "Scores"}
           </button>
         </div>
       </div>
+
+      {wsStatus !== "open" && (
+        <div role="status" className="bg-poulet-red/20 border-b border-poulet-red/50 px-4 py-1 text-center font-mono text-xs text-poulet-cream flex-shrink-0">
+          {wsStatus === "connecting" ? "Connecting to game…" : "Connection lost — reconnecting…"}
+        </div>
+      )}
+      {loadError && (
+        <div role="alert" className="bg-poulet-red/10 border-b border-poulet-red/40 px-4 py-2 text-center font-mono text-xs text-poulet-red flex-shrink-0">
+          {loadError}
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 min-h-0">
@@ -268,7 +296,7 @@ export default function HuntPage() {
             <div className="p-4 border-b border-poulet-feather/20">
               <div className="font-heading text-poulet-gold text-xl uppercase">Leaderboard</div>
             </div>
-            <div className="flex-1 p-3 space-y-2">
+            <div className="flex-1 p-3 space-y-2" aria-live="polite">
               {teams.map((team, i) => (
                 <div
                   key={team.id}
@@ -299,7 +327,7 @@ export default function HuntPage() {
 
       {/* Challenge panel */}
       {!isHeadStart && (
-        <div className="border-t border-poulet-feather/20 bg-poulet-black flex-shrink-0" style={{ minHeight: "10rem" }}>
+        <div className="border-t border-poulet-feather/20 bg-poulet-black flex-shrink-0 pb-safe" style={{ minHeight: "10rem" }}>
           {challenge ? (
             <div className="px-4 py-3 flex items-start gap-4">
               <div className="flex-1 min-w-0">
@@ -326,7 +354,7 @@ export default function HuntPage() {
                   <button
                     onClick={() => void submitChallenge()}
                     disabled={challengeSubmitting}
-                    className="bg-poulet-gold text-poulet-black font-heading text-sm px-4 py-3 uppercase hover:brightness-110 disabled:opacity-50 transition-all whitespace-nowrap"
+                    className="bg-poulet-gold text-poulet-black font-heading text-sm px-4 py-3 min-h-11 uppercase hover:brightness-110 disabled:opacity-50 transition-all whitespace-nowrap"
                   >
                     {challengeSubmitting ? "…" : "Done! ✓"}
                   </button>
@@ -342,7 +370,7 @@ export default function HuntPage() {
       )}
 
       {isHeadStart && (
-        <div className="border-t border-poulet-feather/20 bg-poulet-black/80 px-4 py-4 text-center flex-shrink-0">
+        <div className="border-t border-poulet-feather/20 bg-poulet-black/80 px-4 py-4 text-center flex-shrink-0 pb-safe">
           <div className="font-mono text-poulet-feather text-xs uppercase mb-1">Head start — chicken is hiding</div>
           <div className="font-heading text-poulet-gold text-3xl tabular-nums">{timer}</div>
           <div className="font-mono text-poulet-feather text-xs mt-1">until hunt begins</div>
