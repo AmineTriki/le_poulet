@@ -204,7 +204,7 @@ cd apps/mobile
 eas build --platform ios --profile preview
 ```
 
-This creates a `preview` build (internal distribution). The `eas.json` preview profile:
+This creates a `preview` build (internal distribution, installable on registered devices). Internal-distribution builds cannot be uploaded to App Store Connect; for TestFlight, build and submit with the `production` profile (7.2). The `eas.json` preview profile:
 
 ```json
 {
@@ -219,8 +219,11 @@ This creates a `preview` build (internal distribution). The `eas.json` preview p
 ### 7.2 Submit to TestFlight
 
 ```bash
-eas submit --platform ios --profile preview
-# EAS will upload to App Store Connect automatically
+eas build --platform ios --profile production
+eas submit --platform ios --profile production
+# EAS will upload to App Store Connect automatically.
+# Only a "production" submit profile exists in eas.json; fill in ascAppId and
+# appleTeamId there first (they ship as REPLACE_WITH_... placeholders).
 ```
 
 ### 7.3 Invite testers

@@ -1,6 +1,6 @@
 # 🐔 Le Poulet
 
-[![CI](https://github.com/aminetriki/le-poulet/actions/workflows/ci.yml/badge.svg)](https://github.com/aminetriki/le-poulet/actions/workflows/ci.yml)
+[![CI](https://github.com/AmineTriki/le_poulet/actions/workflows/ci.yml/badge.svg)](https://github.com/AmineTriki/le_poulet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Made with FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Made with Next.js](https://img.shields.io/badge/Web-Next.js%2014-black?logo=next.js)](https://nextjs.org)
@@ -22,11 +22,11 @@ Points come from finding the Chicken first, completing photo and video challenge
 
 - **Real-time GPS tracking** — see your teammates and rivals on a live map
 - **Shrinking zone circle** — the search area narrows every 15 minutes, homing in on the Chicken's bar
-- **60+ photo and video challenges** — earn points and chaos currency by completing ridiculous tasks
+- **65 English / 60 French photo and video challenges** — earn points and chaos currency by completing ridiculous tasks
 - **6 chaos weapons** — spy on rivals, air-strike their GPS, steal their points, drop decoys
 - **Roulette-based Chicken selection** — no one volunteers; the wheel decides
 - **Bilingual** — full English and French support throughout
-- **Costume scoring** — optional chicken costume judging by the crowd
+- **Costume policy** — hosts can make chicken costumes required, encouraged, optional, or off
 - **No ads, no purchases, no accounts required** — just a name and a game code
 - **Open source** — MIT license, contributions welcome
 
@@ -42,7 +42,7 @@ Points come from finding the Chicken first, completing photo and video challenge
 | New York City | Coming soon | English |
 | Tunis | Coming soon | French |
 
-Want to add your city? See [ADDING_A_CITY.md](docs/ADDING_A_CITY.md).
+All five cities are configured in `apps/api/data/cities.json` and selectable when creating a game, but only Montreal ships with local bar fallback data (`montreal_bars.json`); the others rely on live OpenStreetMap queries. Want to add your city? See [ADDING_A_CITY.md](docs/ADDING_A_CITY.md).
 
 ---
 
@@ -72,8 +72,8 @@ Want to add your city? See [ADDING_A_CITY.md](docs/ADDING_A_CITY.md).
 ### 1. Clone
 
 ```bash
-git clone https://github.com/aminetriki/le-poulet.git
-cd le-poulet
+git clone https://github.com/AmineTriki/le_poulet.git
+cd le_poulet
 ```
 
 ### 2. Install dependencies
@@ -87,7 +87,7 @@ cd apps/api && uv sync && cd ../..
 
 ```bash
 docker compose up -d
-# PostgreSQL 16 on :5432, Redis 7 on :6379
+# PostgreSQL 16 on :5432, Redis 7 on :6379 (user/password: postgres/password)
 ```
 
 ### 4. Configure and migrate
@@ -97,28 +97,23 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 cp apps/mobile/.env.example apps/mobile/.env
 
-# Run database migrations and seed data
+# Seed challenges and a test game. Tables are created automatically when the
+# API starts (SQLModel create_all); there are no Alembic revisions yet.
 cd apps/api
-uv run alembic upgrade head
 uv run python -m scripts.seed
 cd ../..
 ```
 
-### 5. Start all services
+### 5. Start the services
+
+`make dev` starts Postgres and Redis, then runs `turbo dev`, which only launches
+packages that define a `dev` script (currently the web app). Run the API in its
+own terminal:
 
 ```bash
-make dev
-# API: http://localhost:8000
-# Web: http://localhost:3000
-# API docs: http://localhost:8000/docs
-```
-
-Or start services individually:
-
-```bash
-make dev-api     # FastAPI only
-make dev-web     # Next.js only
-make dev-mobile  # Expo only (separate terminal)
+make dev-api     # FastAPI with hot reload  -> http://localhost:8000 (docs at /docs)
+make dev-web     # Next.js                  -> http://localhost:3000
+make dev-mobile  # Expo (separate terminal)
 ```
 
 ---
@@ -127,7 +122,7 @@ make dev-mobile  # Expo only (separate terminal)
 
 ### Setup (5 minutes)
 
-1. Open the app or go to [lepoulet.gg](https://lepoulet.gg)
+1. Open the app or go to [lepoulet.vercel.app](https://lepoulet.vercel.app)
 2. The host creates a game — picks the city, rules, and duration
 3. Everyone joins using the 6-character game code
 4. The roulette spins to select the Chicken(s)
@@ -141,7 +136,7 @@ make dev-mobile  # Expo only (separate terminal)
 ### Phase 2: The Hunt (2 hours)
 
 - Teams unlock the live map — GPS positions visible for all players
-- A 1km zone circle appears, centered on the city center
+- A 1km zone circle appears when the head start ends
 - Every 15 minutes the circle shrinks toward the Chicken's bar
 - Teams earn points by completing photo and video challenges
 - Chaos points from challenges unlock weapons
@@ -158,20 +153,22 @@ make dev-mobile  # Expo only (separate terminal)
 
 | Command | Description |
 |---------|-------------|
-| `make dev` | Start all services (Docker + API + Web) |
+| `make dev` | Start Postgres + Redis, then `turbo dev` (web only; run `make dev-api` separately) |
 | `make dev-api` | FastAPI with hot reload on :8000 |
 | `make dev-web` | Next.js dev server on :3000 |
 | `make dev-mobile` | Expo start (scan QR with Expo Go) |
 | `make test` | Run Python tests + JS tests |
 | `make lint` | Ruff + mypy + ESLint + tsc |
-| `make migrate` | Run Alembic migrations to head |
+| `make migrate` | Run Alembic migrations to head (no revisions exist yet; tables are created on API start) |
 | `make migrate-new MSG="desc"` | Generate new migration |
 | `make seed` | Seed challenges and city data |
 | `make build` | Production build (all apps) |
 | `make deploy-web` | Deploy web to Vercel |
 | `make deploy-api` | Deploy API to Railway |
 | `make deploy-mobile` | EAS build + submit to App Store |
-| `make add-city` | Interactive city addition script |
+| `make add-city` | Planned: `scripts/add_city.py` does not exist yet, see [ADDING_A_CITY.md](docs/ADDING_A_CITY.md) |
+| `make challenges` | Planned: `scripts/generate_challenges.py` does not exist yet |
+| `make analyze` | Next.js build with bundle analyzer |
 | `make reset` | Wipe DB and reseed (local only) |
 
 ---
@@ -179,7 +176,7 @@ make dev-mobile  # Expo only (separate terminal)
 ## Project Structure
 
 ```
-le-poulet/
+le_poulet/
 ├── apps/
 │   ├── api/            FastAPI backend (Python)
 │   ├── web/            Next.js web app (TypeScript)
@@ -203,27 +200,36 @@ Full architecture documentation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 ### API (`apps/api/.env`)
 
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/lepoulet
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/lepoulet
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=change-me-to-something-random-in-production
-ALLOWED_ORIGINS=http://localhost:3000,https://lepoulet.gg
+ALLOWED_ORIGINS=http://localhost:3000,https://lepoulet.vercel.app
 OVERPASS_API_URL=https://overpass-api.de/api/interpreter
-SENTRY_DSN=                    # optional
+NOMINATIM_URL=https://nominatim.openstreetmap.org
 LOCATION_RATE_LIMIT_SECONDS=4
+SENTRY_DSN=                    # optional
+ANTHROPIC_API_KEY=             # optional
+EXPO_ACCESS_TOKEN=             # optional, Expo push notifications
 ```
+
+`apps/api/.env.example` also lists pool sizes, `JWT_EXPIRE_HOURS`, `MAX_PLAYERS_PER_GAME`, `GAME_CODE_LENGTH` and `AMAZON_AFFILIATE_TAG`. Replace `SECRET_KEY` in any deployed environment.
 
 ### Web (`apps/web/.env.local`)
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_WS_URL=ws://localhost:8000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SENTRY_DSN=        # optional
 ```
 
 ### Mobile (`apps/mobile/.env`)
 
 ```env
-EXPO_PUBLIC_API_URL=http://localhost:8000
-EXPO_PUBLIC_WS_URL=ws://localhost:8000
+# On a simulator/device use your Mac's LAN IP instead of localhost
+EXPO_PUBLIC_API_URL=http://192.168.1.x:8000
+EXPO_PUBLIC_WS_URL=ws://192.168.1.x:8000
+EXPO_PUBLIC_PROJECT_ID=        # EAS project UUID, needed for push on real devices
 SENTRY_DSN=                    # optional
 ```
 
@@ -252,7 +258,7 @@ Key endpoints:
 - `GET /api/v1/games/{code}` — get game by code
 - `POST /api/v1/players/` — join a game
 - `POST /api/v1/locations/update` — update GPS (rate-limited 4s)
-- `GET /api/v1/bars/search` — search bars via OSM
+- `GET /api/v1/bars/search` — search bars via OSM (Overpass), with local fallback data
 - `WS /ws/{game_id}/{player_id}` — real-time events
 
 ---
@@ -262,7 +268,7 @@ Key endpoints:
 We welcome contributions of all kinds. See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full guide.
 
 Quick rules:
-- Branch off `dev`, not `main`
+- Branch off `main` and open PRs against it (CI also runs for a `dev` branch if one exists)
 - Follow Conventional Commits (`feat`, `fix`, `docs`, etc.)
 - All new code needs tests
 - Python: ruff + mypy must pass. TypeScript: eslint + tsc must pass
@@ -284,7 +290,12 @@ To set up iOS development: [docs/IOS_SETUP.md](docs/IOS_SETUP.md)
 Secrets required in GitHub Actions:
 - `RAILWAY_TOKEN` — Railway deployment token
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` — Vercel deployment
+- `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL` — API/WebSocket URLs baked into the web build
 - `EXPO_TOKEN` — Expo EAS token
+
+### Deploying / preview on Vercel
+
+The web app lives in `apps/web` and is deployed by `.github/workflows/deploy-web.yml`, which runs on pushes to `main` touching `apps/web/**` or `packages/**`. For a manual deploy use `make deploy-web` (`vercel --prod --cwd apps/web`). The web app reads `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_WS_URL` at build time (see `apps/web/.env.production` for the committed production values), and the API's `ALLOWED_ORIGINS` must include the web origin or browser requests will fail CORS.
 
 ---
 
@@ -310,7 +321,7 @@ Free to use, modify, and distribute. Attribution appreciated but not required.
 
 ## Credits
 
-Built by [Amine Triki](https://github.com/aminetriki) and contributors.
+Built by [Amine Triki](https://github.com/AmineTriki) and contributors.
 
 Inspired by the classic Montreal bar-hopping tradition of finding your friend hiding in the city.
 
