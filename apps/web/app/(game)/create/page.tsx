@@ -141,7 +141,7 @@ export default function CreatePage() {
   const steps = ["Setup", "Players", "Rules", "Bar", "Suit", "Launch"];
 
   return (
-    <div className="min-h-screen bg-poulet-black px-6 py-12">
+    <div className="min-h-dvh bg-poulet-black px-6 py-12">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-10">

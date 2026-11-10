@@ -23,7 +23,7 @@ export default function ResultsPage() {
   const winner = teams[0];
 
   return (
-    <div className="min-h-screen bg-poulet-black px-6 py-20">
+    <div className="min-h-dvh bg-poulet-black px-6 py-20">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center">
           <div className="font-heading text-poulet-gold leading-none mb-4" style={{ fontSize: "clamp(4rem, 15vw, 8rem)" }}>

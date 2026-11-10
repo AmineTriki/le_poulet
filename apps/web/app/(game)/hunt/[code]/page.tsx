@@ -210,7 +210,7 @@ export default function HuntPage() {
   const lang = gameState?.language ?? "en";
 
   return (
-    <div className="h-screen bg-poulet-black flex flex-col overflow-hidden">
+    <div className="h-dvh bg-poulet-black flex flex-col overflow-hidden">
       {/* Header */}
       <div className="h-14 border-b border-poulet-feather/20 flex items-center justify-between px-4 flex-shrink-0 z-10">
         <div className="flex items-center gap-3">

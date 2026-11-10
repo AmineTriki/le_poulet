@@ -126,7 +126,7 @@ export default function LobbyPage() {
 
   if (showRoulette) {
     return (
-      <div className="min-h-screen bg-poulet-black flex flex-col items-center justify-center px-6 py-12">
+      <div className="min-h-dvh bg-poulet-black flex flex-col items-center justify-center px-6 py-12">
         <h2 className="font-heading text-poulet-gold text-5xl uppercase mb-8 text-center">
           Who Is The Chicken?
         </h2>
@@ -161,7 +161,7 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-poulet-black px-6 py-12">
+    <div className="min-h-dvh bg-poulet-black px-6 py-12">
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Game code */}
         <div className="text-center">

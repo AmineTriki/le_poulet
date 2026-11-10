@@ -78,7 +78,7 @@ function JoinForm() {
 
 export default function JoinPage() {
   return (
-    <div className="min-h-screen bg-poulet-black flex items-center justify-center px-6">
+    <div className="min-h-dvh bg-poulet-black flex items-center justify-center px-6">
       <Suspense fallback={
         <div className="font-mono text-poulet-feather text-sm">Loading…</div>
       }>

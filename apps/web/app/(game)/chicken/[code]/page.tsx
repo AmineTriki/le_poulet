@@ -29,7 +29,7 @@ export default function ChickenPage() {
   useGameSocket(session?.gameId ?? null, session?.playerId ?? null, handleWsMessage);
 
   return (
-    <div className="h-screen bg-poulet-black flex flex-col">
+    <div className="h-dvh bg-poulet-black flex flex-col">
       {/* Header */}
       <div
         className={`h-14 border-b flex items-center justify-between px-6 flex-shrink-0 transition-all duration-500 ${
