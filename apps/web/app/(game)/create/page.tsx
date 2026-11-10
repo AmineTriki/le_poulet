@@ -315,7 +315,6 @@ export default function CreatePage() {
                 value={form.headStartMinutes}
                 onChange={(e) => { update("headStartMinutes", Number(e.target.value)); setTestMode(false); }}
                 aria-label="Head start in minutes"
-                aria-label="Game duration in hours"
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
@@ -336,6 +335,7 @@ export default function CreatePage() {
                 step={0.5}
                 value={form.gameDurationHours}
                 onChange={(e) => { update("gameDurationHours", Number(e.target.value)); setTestMode(false); }}
+                aria-label="Game duration in hours"
                 className="w-full accent-poulet-gold"
               />
               <div className="flex justify-between font-mono text-poulet-feather/40 text-xs mt-1">
