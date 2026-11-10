@@ -31,6 +31,8 @@ class TeamDraft:
 
 
 async def build_teams(players: list[Player], team_size: int, language: str) -> list[TeamDraft]:
+    if team_size < 1:
+        raise ValueError("team_size must be >= 1")
     random.shuffle(players)
     names = list(TEAM_NAMES_FR if language == "fr" else TEAM_NAMES_EN)
     random.shuffle(names)
@@ -40,7 +42,8 @@ async def build_teams(players: list[Player], team_size: int, language: str) -> l
         chunk = players[i : i + team_size]
         team = Team(
             game_id="",
-            name=names[idx % len(names)],
+            # Past the end of the name list, add a round number so team names stay unique.
+            name=names[idx % len(names)] if idx < len(names) else f"{names[idx % len(names)]} {idx // len(names) + 1}",
             color=TEAM_COLORS[idx % len(TEAM_COLORS)],
         )
         drafts.append(TeamDraft(team=team, players=chunk))

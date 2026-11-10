@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.config import settings
 from app.database import get_session
-from app.models.game import Game
+from app.models.game import Game, GameStatus
 from app.models.player import Player
 from app.schemas.player import PlayerCreate
 from app.websockets.manager import manager
@@ -22,9 +23,17 @@ async def join_game(data: PlayerCreate, session: AsyncSession = Depends(get_sess
     game = game_result.first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
+    if game.status == GameStatus.ENDED:
+        raise HTTPException(status_code=409, detail="Game has ended")
+    count_result = await session.exec(select(Player).where(Player.game_id == game.id))
+    if len(count_result.all()) >= settings.max_players_per_game:
+        raise HTTPException(status_code=409, detail="Game is full")
+    name = data.name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Name must not be blank")
     player = Player(
         game_id=data.game_id,
-        name=data.name,
+        name=name,
         emoji=data.emoji or random.choice(EMOJIS),
     )
     session.add(player)
